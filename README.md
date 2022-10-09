@@ -57,7 +57,7 @@ VibeWave is a platform for music distribution. You can share your own hard work 
 
 ## Database Model
 
-Coming Soon...
+![VibeWave Database Model](https://i.imgur.com/paQRFoz.jpg)
 
 ## Authors
 
