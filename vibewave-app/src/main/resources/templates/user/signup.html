@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up | VibeWave</title>
+</head>
+<body>
+    <form action="#" th:action="@{/user/signup}" th:object="${user}" method="POST">
+        <input type="text" th:field="*{username}" placeholder="Username">
+        <input type="text" th:field="*{email}" placeholder="Email">
+        <input type="text" th:field="*{password}" placeholder="Password">
+        <input type="text" th:field="*{repeatedPassword}" placeholder="Repeated Password">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
