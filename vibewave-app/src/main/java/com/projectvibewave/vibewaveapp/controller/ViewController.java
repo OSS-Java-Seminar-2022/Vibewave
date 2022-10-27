@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class ViewController {
-
     private final Logger logger = LoggerFactory.getLogger(ViewController.class);
 
     @GetMapping("/")

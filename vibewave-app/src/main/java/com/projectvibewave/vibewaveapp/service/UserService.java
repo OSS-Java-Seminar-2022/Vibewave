@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService implements UserDetailsService {
-    private final PasswordEncoder passwordEncoder;
     public final static String USER_NOT_FOUND_MSG = "User %s not found";
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
     @Autowired

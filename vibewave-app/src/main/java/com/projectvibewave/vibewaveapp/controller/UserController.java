@@ -23,9 +23,9 @@ public class UserController {
 
     @GetMapping("/signup")
     public String signUp(Model model) {
+        logger.info("Accessed Home View");
         var user = new UserSignUpDto();
         model.addAttribute("user", user);
-
         return "user/signup";
     }
 
