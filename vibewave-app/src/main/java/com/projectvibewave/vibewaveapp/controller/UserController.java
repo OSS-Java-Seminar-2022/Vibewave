@@ -8,7 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/user")
@@ -30,9 +35,16 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public String signUp(@ModelAttribute("user") UserSignUpDto request) {
+    public String signUp(@Valid @ModelAttribute("user") UserSignUpDto user, BindingResult bindingResult, Model model) {
         logger.info("trying to sign up a user....");
-        userService.signUp(request);
+        if (!user.getPassword().equals(user.getRepeatedPassword())) {
+            bindingResult.rejectValue("repeatedPassword", "error.user", "Passwords do not match");
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "user/signup";
+        }
+        userService.signUp(user);
         return "redirect:/";
     }
 }

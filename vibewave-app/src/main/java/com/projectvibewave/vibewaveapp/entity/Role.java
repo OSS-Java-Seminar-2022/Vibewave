@@ -4,6 +4,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 @Entity
@@ -17,8 +18,9 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private Integer id;
-    @Column(name = "role_name")
+    private Long id;
+    @Column(name = "role_name", nullable = false)
+    @Size(min = 1, max = 255)
     private String name;
 
     public Role(String name) {

@@ -19,7 +19,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    public Integer id;
+    public Long id;
     @Column(nullable = false, unique = true)
     private String username;
     private String password;
@@ -62,11 +62,11 @@ public class User implements UserDetails {
         this.isEnabled = isEnabled;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
