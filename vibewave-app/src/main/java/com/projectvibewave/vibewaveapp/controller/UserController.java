@@ -37,14 +37,12 @@ public class UserController {
     @PostMapping("/signup")
     public String signUp(@Valid @ModelAttribute("user") UserSignUpDto user, BindingResult bindingResult, Model model) {
         logger.info("trying to sign up a user....");
-        if (!user.getPassword().equals(user.getRepeatedPassword())) {
-            bindingResult.rejectValue("repeatedPassword", "error.user", "Passwords do not match");
-        }
+        var isSuccessful = userService.trySignUp(user, bindingResult);
 
-        if (bindingResult.hasErrors()) {
+        if (!isSuccessful) {
             return "user/signup";
         }
-        userService.signUp(user);
-        return "redirect:/";
+
+        return "redirect:/?signup";
     }
 }

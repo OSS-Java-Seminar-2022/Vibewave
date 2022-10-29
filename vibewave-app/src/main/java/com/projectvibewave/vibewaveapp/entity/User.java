@@ -16,6 +16,9 @@ import java.util.*;
 @Builder
 @Table(name = "app_user")
 public class User implements UserDetails {
+    private final static String ROLE_PREFIX = "ROLE_";
+    private final static String DEFAULT_ROLE = "BASIC";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -151,6 +154,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         var grantedAuthorities = new ArrayList<SimpleGrantedAuthority>();
+        grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + DEFAULT_ROLE));
         for(Role role : roles) {
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
         }
