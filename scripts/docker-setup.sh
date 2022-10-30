@@ -1,5 +1,6 @@
 #!/bin/bash
-# note: needs to be run with sudo 
+# important: we recommend using docker-compose.yml file to run the app (command: docker compose up -d); only use this if you experience issues
+# note: needs to be run with sudo
 
 # create database
 # docker pull postgres
