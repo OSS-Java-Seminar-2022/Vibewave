@@ -1,5 +1,6 @@
 package com.projectvibewave.vibewaveapp.service;
 
+import com.google.common.collect.Sets;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
 import com.projectvibewave.vibewaveapp.entity.Role;
 import com.projectvibewave.vibewaveapp.entity.User;
@@ -17,6 +18,8 @@ import java.util.HashSet;
 
 @Service
 public class UserService implements UserDetailsService {
+    private final static String ROLE_PREFIX = "ROLE_";
+    private final static String DEFAULT_ROLE_NAME = "BASIC";
     public final static String USER_NOT_FOUND_MSG = "User %s not found";
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -32,7 +35,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() ->
-            new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, username))
+                new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, username))
         );
     }
 
@@ -55,10 +58,17 @@ public class UserService implements UserDetailsService {
             return false;
         }
 
-        var user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setEmail(userDto.getEmail());
+        var defaultRole = roleRepository.findByName(ROLE_PREFIX + DEFAULT_ROLE_NAME).orElseThrow(() ->
+                new RuntimeException("Default role was not found in database")
+        );
+
+        var user = User.builder()
+                .username(userDto.getUsername())
+                .password(passwordEncoder.encode(userDto.getPassword()))
+                .email(userDto.getEmail())
+                .roles(Sets.newHashSet(defaultRole))
+                .build();
+
         userRepository.save(user);
 
         return true;

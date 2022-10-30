@@ -16,9 +16,6 @@ import java.util.*;
 @Builder
 @Table(name = "app_user")
 public class User implements UserDetails {
-    private final static String ROLE_PREFIX = "ROLE_";
-    private final static String DEFAULT_ROLE = "BASIC";
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -28,6 +25,7 @@ public class User implements UserDetails {
     private String password;
     @Column(nullable = false, unique = true)
     private String email;
+    @Builder.Default
     private LocalDateTime createdOn = LocalDateTime.now();
     private String artistName;
     private boolean isPrivate = false;
@@ -80,6 +78,7 @@ public class User implements UserDetails {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
     public void addRole(Role role) {
         roles.add(role);
     }
@@ -157,8 +156,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         var grantedAuthorities = new ArrayList<SimpleGrantedAuthority>();
-        grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + DEFAULT_ROLE));
-        for(Role role : roles) {
+        for (Role role : roles) {
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return grantedAuthorities;
