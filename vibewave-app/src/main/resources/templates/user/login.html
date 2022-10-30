@@ -10,22 +10,9 @@
     <script src="/uikit.min.js"></script>
     <!-- UIkit Icons JS -->
     <script src="/uikit-icons.min.js"></script>
-    <title>Home | VibeWave</title>
+    <title>Log In | VibeWave</title>
 </head>
 <body>
-<div id="logout-confirmation" uk-modal>
-    <div class="uk-modal-dialog uk-modal-body">
-        <button class="uk-modal-close-default" type="button" uk-close></button>
-        <h2 class="uk-modal-title">Confirmation</h2>
-        <p class="my-5">Are you sure you want to log out from your account?</p>
-        <div class="uk-text-right mt-3">
-<!--            <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>-->
-            <form class="inline" th:action="@{/logout}" method="post">
-                <button class="uk-button uk-button-danger bg-pink-500" type="submit">Log Out</button>
-            </form>
-        </div>
-    </div>
-</div>
 <header>
     <nav class="uk-navbar-container justify-between px-5 gap-5" uk-navbar>
         <div class="uk-navbar-left">
@@ -96,10 +83,51 @@
 </header>
 <main>
     <div class="uk-container uk-container-large">
-        <div th:if="${param.login}">
-            <p class="text-green-500">You've been successfully logged in!</p>
+        <h1 class="uk-heading-small text-center mt-3">Log In</h1>
+        <hr class="uk-divider-icon"/>
+        <div class="uk-container uk-container-xsmall">
+            <div th:if="${param.logout}">
+                <p class="text-blue-500">You've been logged out!</p>
+            </div>
+            <div th:if="${param.error}">
+                <p class="text-red-500">Wrong credentials!</p>
+            </div>
+            <form action="#" th:action="@{/login}" method="POST"
+                  class="uk-form-horizontal uk-margin-large">
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="username">Username:</label>
+                    <div class="uk-form-controls">
+                        <div class="uk-inline block">
+                            <span class="uk-form-icon" uk-icon="icon: user"></span>
+                            <input class="uk-input"
+                                   id="username" type="text" name="username"
+                                   placeholder="Enter your username">
+                        </div>
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="password">Password:</label>
+                    <div class="uk-form-controls">
+                        <div class="uk-inline block">
+                            <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                            <input class="uk-input"
+                                   id="password"
+                                   type="password" name="password"
+                                   placeholder="Enter your password">
+                        </div>
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="remember-me">Remember Me:</label>
+                    <div class="uk-form-controls">
+                        <div class="uk-inline block">
+                            <input id="remember-me" class="uk-checkbox" type="checkbox" name="remember-me">
+                        </div>
+                    </div>
+                </div>
+                <button class="uk-button uk-button-primary bg-blue-500" type="submit">Log In</button>
+            </form>
         </div>
-        <h1 class="uk-heading-small text-center mt-3">Home</h1>
     </div>
 </main>
 </body>

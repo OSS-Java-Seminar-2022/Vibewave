@@ -33,7 +33,7 @@ public class User implements UserDetails {
     private boolean isPrivate = false;
     private String profilePhotoUrl;
     private boolean isVerified = false;
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -79,6 +79,9 @@ public class User implements UserDetails {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+    public void addRole(Role role) {
+        roles.add(role);
     }
 
     public void setEnabled(boolean enabled) {

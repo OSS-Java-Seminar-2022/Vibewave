@@ -1,16 +1,14 @@
 package com.projectvibewave.vibewaveapp.controller;
 
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
-import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -26,9 +24,17 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/login")
+    public String logIn(Model model) {
+        logger.info("Accessed Log In Page");
+        return "user/login";
+    }
+
+    @PreAuthorize("isAnonymous()")
     @GetMapping("/signup")
     public String signUp(Model model) {
-        logger.info("Accessed Home View");
+        logger.info("Accessed Sign Up Page");
         var user = new UserSignUpDto();
         model.addAttribute("user", user);
         return "user/signup";

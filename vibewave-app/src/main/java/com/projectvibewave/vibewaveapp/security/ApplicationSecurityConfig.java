@@ -18,7 +18,6 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig {
-
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
@@ -40,6 +39,16 @@ public class ApplicationSecurityConfig {
                 .headers().frameOptions().sameOrigin()
                 .and()
                 .formLogin()
+                .loginPage("/user/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/?login")
+                .failureUrl("/user/login?error")
+                .and()
+                .logout()
+                .deleteCookies("JSESSIONID")
+                .and()
+                .rememberMe()
+                .key("uniqueAndSecret")
                 .and()
                 .build();
     }

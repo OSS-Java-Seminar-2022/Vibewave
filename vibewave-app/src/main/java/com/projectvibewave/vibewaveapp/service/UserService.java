@@ -51,7 +51,7 @@ public class UserService implements UserDetailsService {
             bindingResult.rejectValue("email", "error.user", "E-Mail already exists");
         }
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             return false;
         }
 

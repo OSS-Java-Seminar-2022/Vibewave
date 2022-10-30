@@ -1,11 +1,10 @@
 package com.projectvibewave.vibewaveapp.entity;
 
 import lombok.*;
-import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -22,6 +21,9 @@ public class Role {
     @Column(name = "role_name", nullable = false, unique = true)
     @Size(min = 1, max = 255)
     private String name;
+
+    @ManyToMany(mappedBy = "roles")
+    private Set<User> users;
 
     public Role(String name) {
         this.name = name;

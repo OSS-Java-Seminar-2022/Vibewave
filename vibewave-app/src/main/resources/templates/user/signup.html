@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <!--Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/tailwindcss.3.2.1.js"></script>
     <!-- UIkit CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.15.11/dist/css/uikit.min.css"/>
+    <link rel="stylesheet" href="/uikit.min.css"/>
     <!-- UIkit JS -->
-    <script src="https://cdn.jsdelivr.net/npm/uikit@3.15.11/dist/js/uikit.min.js"></script>
+    <script src="/uikit.min.js"></script>
     <!-- UIkit Icons JS -->
-    <script src="https://cdn.jsdelivr.net/npm/uikit@3.15.11/dist/js/uikit-icons.min.js"></script>
+    <script src="/uikit-icons.min.js"></script>
     <title>Sign Up | VibeWave</title>
 </head>
 <body>
@@ -18,10 +18,10 @@
         <div class="uk-navbar-left">
             <ul class="uk-navbar-nav">
                 <li th:class="${#httpServletRequest.requestURI == '/'} ? 'uk-active' : ''">
-                    <a href="@{/}">Home</a>
+                    <a th:href="@{/}">Home</a>
                 </li>
-                <li th:class="${#httpServletRequest.requestURI == '/user/signup/'} ? 'uk-active' : ''">
-                    <a href="#">Discover</a>
+                <li>
+                    <a>Discover</a>
                     <div class="uk-navbar-dropdown">
                         <ul class="uk-nav uk-navbar-dropdown-nav">
                             <li><a href="#">Fresh</a></li>
@@ -45,19 +45,35 @@
         <div class="uk-navbar-right">
             <ul class="uk-navbar-nav">
                 <li>
-                    <a href="#"><span uk-icon="user"></span></a>
+                    <a href="#"><span
+                            th:text="${#authentication.getName().equalsIgnoreCase('anonymoususer') ? 'Guest' : #authentication.getName()}"></span><span
+                            uk-icon="user"></span></a>
                     <div class="uk-navbar-dropdown">
                         <ul class="uk-nav uk-navbar-dropdown-nav">
                             <li sec:authorize="isAuthenticated()"
-                                th:class="${#httpServletRequest.requestURI == '/user/settings/'} ? 'uk-active' : ''">
-                                <a href="#">Settings</a></li>
-                            <li sec:authorize="isAuthenticated()"><a href="#">Logout</a></li>
+                                th:class="${#httpServletRequest.requestURI.startsWith('/user/my-profile')} ? 'uk-active' : ''">
+                                <a href="#">My Profile</a>
+                            </li>
+                            <li sec:authorize="isAuthenticated()"
+                                th:class="${#httpServletRequest.requestURI.startsWith('/user/settings')} ? 'uk-active' : ''">
+                                <a href="#">Settings</a>
+                            </li>
+                            <li sec:authorize="isAuthenticated()">
+                                <a href="#logout-confirmation" uk-toggle>Log Out</a>
+                            </li>
+                            <li sec:authorize="hasAnyRole('ROLE_ADMIN')" class="uk-nav-divider"></li>
+                            <li sec:authorize="hasAnyRole('ROLE_ADMIN')"
+                                th:class="${#httpServletRequest.requestURI.startsWith('/user/admin')} ? 'uk-active' : ''">
+                                <a href="#">Admin</a>
+                            </li>
                             <li sec:authorize="isAnonymous()"
-                                th:class="${#httpServletRequest.requestURI == '/user/login/'} ? 'uk-active' : ''"><a
-                                    href="#">Log In</a></li>
+                                th:class="${#httpServletRequest.requestURI.startsWith('/user/login')} ? 'uk-active' : ''">
+                                <a th:href="@{/user/login}">Log In</a>
+                            </li>
                             <li sec:authorize="isAnonymous()"
-                                th:class="${#httpServletRequest.requestURI == '/user/signup/'} ? 'uk-active' : ''">
-                                <a href="#">Sign Up</a></li>
+                                th:class="${#httpServletRequest.requestURI.startsWith('/user/signup')} ? 'uk-active' : ''">
+                                <a th:href="@{/user/signup}">Sign Up</a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -75,7 +91,7 @@
                 <div class="uk-margin">
                     <label class="uk-form-label" for="username">Username:</label>
                     <div class="uk-form-controls">
-                        <div class="uk-inline">
+                        <div class="uk-inline block">
                             <span class="uk-form-icon" uk-icon="icon: user"></span>
                             <input class="uk-input"
                                    th:classappend="${#fields.hasErrors('username')} ? 'uk-form-danger' : ''"
@@ -90,7 +106,7 @@
                 <div class="uk-margin">
                     <label class="uk-form-label" for="email">E-Mail:</label>
                     <div class="uk-form-controls">
-                        <div class="uk-inline">
+                        <div class="uk-inline block">
                             <span class="uk-form-icon" uk-icon="icon: mail"></span>
                             <input class="uk-input"
                                    th:classappend="${#fields.hasErrors('email')} ? 'uk-form-danger' : ''"
@@ -105,7 +121,7 @@
                 <div class="uk-margin">
                     <label class="uk-form-label" for="password">Password:</label>
                     <div class="uk-form-controls">
-                        <div class="uk-inline">
+                        <div class="uk-inline block">
                             <span class="uk-form-icon" uk-icon="icon: lock"></span>
                             <input class="uk-input"
                                    th:classappend="${#fields.hasErrors('password')} ? 'uk-form-danger' : ''"
@@ -121,7 +137,7 @@
                 <div class="uk-margin">
                     <label class="uk-form-label" for="repeatedPassword">Repeat Password:</label>
                     <div class="uk-form-controls">
-                        <div class="uk-inline">
+                        <div class="uk-inline block">
                             <span class="uk-form-icon" uk-icon="icon: lock"></span>
                             <input class="uk-input"
                                    th:classappend="${#fields.hasErrors('repeatedPassword')} ? 'uk-form-danger' : ''"
@@ -133,7 +149,7 @@
                         </ul>
                     </div>
                 </div>
-                <button class="uk-button uk-button-primary bg-blue-500" type="submit">Submit</button>
+                <button class="uk-button uk-button-primary bg-blue-500" type="submit">Sign Up</button>
             </form>
         </div>
     </div>
