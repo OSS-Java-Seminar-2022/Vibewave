@@ -6,7 +6,6 @@ public enum ConfirmationTokenStatus {
     SUCCESSFULLY_CONFIRMED("E-Mail has been successfully confirmed"),
     EXPIRED("Token has expired");
 
-
     private final String message;
 
     ConfirmationTokenStatus(String message) {

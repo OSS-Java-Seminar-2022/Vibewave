@@ -5,8 +5,6 @@ import com.projectvibewave.vibewaveapp.entity.Role;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.repository.RoleRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
-import com.projectvibewave.vibewaveapp.service.RoleService;
-import com.projectvibewave.vibewaveapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,7 +13,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletRequest;
 import java.util.*;
 
 @SpringBootApplication
