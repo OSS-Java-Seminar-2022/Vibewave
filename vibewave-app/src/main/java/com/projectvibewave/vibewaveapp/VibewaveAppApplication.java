@@ -3,8 +3,8 @@ package com.projectvibewave.vibewaveapp;
 import com.google.common.collect.Sets;
 import com.projectvibewave.vibewaveapp.entity.Role;
 import com.projectvibewave.vibewaveapp.entity.User;
-import com.projectvibewave.vibewaveapp.repository.RoleRepository;
-import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.service.RoleService;
+import com.projectvibewave.vibewaveapp.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletRequest;
 import java.util.*;
 
 @SpringBootApplication
@@ -20,10 +21,10 @@ public class VibewaveAppApplication implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(VibewaveAppApplication.class);
 
     @Resource
-    private RoleRepository roleRepository;
+    private RoleService roleService;
 
     @Resource
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -48,11 +49,11 @@ public class VibewaveAppApplication implements CommandLineRunner {
                         .build()
         );
 
-        roleRepository.saveAll(allRoles);
+        roleService.saveAll(allRoles);
 
-        var basicRole = roleRepository.findByName("ROLE_BASIC");
-        var premiumRole = roleRepository.findByName("ROLE_PREMIUM");
-        var adminRole = roleRepository.findByName("ROLE_ADMIN");
+        var basicRole = roleService.findByName("ROLE_BASIC");
+        var premiumRole = roleService.findByName("ROLE_PREMIUM");
+        var adminRole = roleService.findByName("ROLE_ADMIN");
 
         if (basicRole.isEmpty() || premiumRole.isEmpty() || adminRole.isEmpty()) {
             throw new RuntimeException("Roles were not inserted properly at startup.");
@@ -75,7 +76,7 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .build();
 
         var users = List.of(adminUser, basicUser);
-        userRepository.saveAll(users);
+        userService.saveAll(users);
 
         logger.info("database populated!");
     }

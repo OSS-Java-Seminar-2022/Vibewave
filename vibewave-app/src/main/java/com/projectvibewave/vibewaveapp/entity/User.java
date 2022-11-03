@@ -1,6 +1,7 @@
 package com.projectvibewave.vibewaveapp.entity;
 
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,7 @@ import java.util.*;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     public Long id;
     @Column(nullable = false, unique = true)
     private String username;
@@ -26,42 +27,19 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
     @Builder.Default
-    private LocalDateTime createdOn = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
     private String artistName;
     private boolean isPrivate = false;
     private String profilePhotoUrl;
     private boolean isVerified = false;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private boolean isEnabled;
+    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
-
-    private boolean isEnabled;
-
-    public User(String username,
-                String password,
-                String email,
-                LocalDateTime createdOn,
-                String artistName,
-                boolean isPrivate,
-                String profilePhotoUrl,
-                boolean isVerified,
-                Set<Role> roles,
-                boolean isEnabled) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.createdOn = createdOn;
-        this.artistName = artistName;
-        this.isPrivate = isPrivate;
-        this.profilePhotoUrl = profilePhotoUrl;
-        this.isVerified = isVerified;
-        this.roles = roles;
-        this.isEnabled = isEnabled;
-    }
 
     public Long getId() {
         return id;
@@ -113,12 +91,12 @@ public class User implements UserDetails {
         this.email = email;
     }
 
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getArtistName() {

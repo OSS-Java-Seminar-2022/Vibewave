@@ -16,13 +16,14 @@ import java.util.Set;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
+    @Column(name = "role_id", nullable = false)
     private Long id;
     @Column(name = "role_name", nullable = false, unique = true)
     @Size(min = 1, max = 255)
     private String name;
 
     @ManyToMany(mappedBy = "roles")
+    @ToString.Exclude
     private Set<User> users;
 
     public Role(String name) {

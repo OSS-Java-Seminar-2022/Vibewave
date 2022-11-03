@@ -12,6 +12,7 @@ import javax.validation.constraints.*;
 public class UserSignUpDto {
     @NotNull
     @Size(min = 3, max = 255)
+    @Pattern(regexp = "[A-z0-9_]+", message = "Only letters, numbers and _ are allowed")
     private String username;
     @Email
     @NotNull

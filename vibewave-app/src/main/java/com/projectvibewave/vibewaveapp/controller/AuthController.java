@@ -1,10 +1,13 @@
 package com.projectvibewave.vibewaveapp.controller;
 
+import com.projectvibewave.vibewaveapp.dto.EmailConfirmation;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
+import com.projectvibewave.vibewaveapp.service.ConfirmationTokenService;
 import com.projectvibewave.vibewaveapp.service.UserService;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,15 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @Controller
+@AllArgsConstructor
 @RequestMapping("/user")
-public class UserController {
+public class AuthController {
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final ConfirmationTokenService confirmationTokenService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -50,5 +50,34 @@ public class UserController {
         }
 
         return "redirect:/?signup";
+    }
+
+    @GetMapping("/confirm")
+    public String confirmEmail(@Param("token") String token, Model model) {
+        logger.info("Accessed Confirm Page");
+        var status = userService.tryConfirmEmail(token);
+        model.addAttribute("message", status.getMessage());
+        return "user/confirm";
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/confirm/resend")
+    public String resendConfirmationToken(Model model) {
+        logger.info("Accessed Resend Confirmation Token Page");
+        var emailConfirmation = new EmailConfirmation();
+        model.addAttribute("emailConfirmation", emailConfirmation);
+        return "user/resend-confirmation";
+    }
+
+    @PostMapping("/confirm/resend")
+    public String resendConfirmationToken(@Valid @ModelAttribute("emailConfirmation") EmailConfirmation emailConfirmation, BindingResult bindingResult, Model model) {
+        logger.info("trying to resend email confirmation....");
+        var isSuccessful = userService.reSendConfirmationToken(emailConfirmation, bindingResult);
+
+        if (!isSuccessful) {
+            return "user/resend-confirmation";
+        }
+
+        return "redirect:/?resend";
     }
 }
