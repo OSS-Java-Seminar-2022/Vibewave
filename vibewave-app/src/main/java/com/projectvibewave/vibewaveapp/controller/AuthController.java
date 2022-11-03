@@ -52,6 +52,7 @@ public class AuthController {
         return "redirect:/?signup";
     }
 
+    @PreAuthorize("isAnonymous()")
     @GetMapping("/confirm")
     public String confirmEmail(@Param("token") String token, Model model) {
         logger.info("Accessed Confirm Page");

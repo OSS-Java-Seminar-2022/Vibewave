@@ -8,6 +8,4 @@ public interface RoleService {
     void saveAll(Iterable<Role> roles);
 
     Optional<Role> findByName(String name);
-
-    Optional<Role> getDefaultRole();
 }

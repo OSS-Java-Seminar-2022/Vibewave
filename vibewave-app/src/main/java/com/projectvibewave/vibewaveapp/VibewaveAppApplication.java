@@ -3,6 +3,8 @@ package com.projectvibewave.vibewaveapp;
 import com.google.common.collect.Sets;
 import com.projectvibewave.vibewaveapp.entity.Role;
 import com.projectvibewave.vibewaveapp.entity.User;
+import com.projectvibewave.vibewaveapp.repository.RoleRepository;
+import com.projectvibewave.vibewaveapp.repository.UserRepository;
 import com.projectvibewave.vibewaveapp.service.RoleService;
 import com.projectvibewave.vibewaveapp.service.UserService;
 import org.slf4j.Logger;
@@ -21,10 +23,10 @@ public class VibewaveAppApplication implements CommandLineRunner {
     private final Logger logger = LoggerFactory.getLogger(VibewaveAppApplication.class);
 
     @Resource
-    private RoleService roleService;
+    private RoleRepository roleRepository;
 
     @Resource
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -49,13 +51,13 @@ public class VibewaveAppApplication implements CommandLineRunner {
                         .build()
         );
 
-        roleService.saveAll(allRoles);
+        roleRepository.saveAll(allRoles);
 
-        var basicRole = roleService.findByName("ROLE_BASIC");
-        var premiumRole = roleService.findByName("ROLE_PREMIUM");
-        var adminRole = roleService.findByName("ROLE_ADMIN");
+        var basicRole = roleRepository.findByName("ROLE_BASIC").orElse(null);
+        var premiumRole = roleRepository.findByName("ROLE_PREMIUM").orElse(null);
+        var adminRole = roleRepository.findByName("ROLE_ADMIN").orElse(null);
 
-        if (basicRole.isEmpty() || premiumRole.isEmpty() || adminRole.isEmpty()) {
+        if (basicRole == null || premiumRole == null || adminRole == null) {
             throw new RuntimeException("Roles were not inserted properly at startup.");
         }
 
@@ -64,7 +66,7 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .email("basic@user.com")
                 .password(passwordEncoder.encode("basic"))
                 .isEnabled(true)
-                .roles(Sets.newHashSet(basicRole.get()))
+                .roles(Sets.newHashSet(basicRole))
                 .build();
 
         var adminUser = User.builder()
@@ -72,11 +74,11 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .email("admin@user.com")
                 .password(passwordEncoder.encode("admin"))
                 .isEnabled(true)
-                .roles(Sets.newHashSet(basicRole.get(), premiumRole.get(), adminRole.get()))
+                .roles(Sets.newHashSet(basicRole, premiumRole, adminRole))
                 .build();
 
         var users = List.of(adminUser, basicUser);
-        userService.saveAll(users);
+        userRepository.saveAll(users);
 
         logger.info("database populated!");
     }

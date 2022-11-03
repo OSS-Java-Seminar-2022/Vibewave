@@ -13,19 +13,4 @@ import java.util.Optional;
 public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
     private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    @Override
-    public void save(ConfirmationToken token) {
-        confirmationTokenRepository.save(token);
-    }
-
-    @Override
-    public Optional<ConfirmationToken> findByToken(String token) {
-        return confirmationTokenRepository.findByToken(token);
-    }
-
-    @Override
-    public void removeAllByUser(User user) {
-        confirmationTokenRepository.removeAllByUser(user);
-    }
-
 }

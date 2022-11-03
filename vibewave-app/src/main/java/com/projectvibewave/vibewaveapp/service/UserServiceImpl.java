@@ -6,6 +6,8 @@ import com.projectvibewave.vibewaveapp.enums.ConfirmationTokenStatus;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
 import com.projectvibewave.vibewaveapp.entity.ConfirmationToken;
 import com.projectvibewave.vibewaveapp.entity.User;
+import com.projectvibewave.vibewaveapp.repository.ConfirmationTokenRepository;
+import com.projectvibewave.vibewaveapp.repository.RoleRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -25,14 +27,15 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
+    private final static String DEFAULT_ROLE_NAME = "ROLE_BASIC";
     private final static int TOKEN_EXPIRATION_TIME_MINUTES = 15;
     private final static String USER_NOT_FOUND_MSG = "User %s not found";
     private final static String EMAIL_CONFIRMATION_SUBJECT = "VibeWave - Confirm Your E-Mail";
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final ConfirmationTokenService confirmationTokenService;
+    private final RoleRepository roleRepository;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailService emailService;
     private final ServletRequest servletRequest;
 
@@ -66,7 +69,7 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        var defaultRole = roleService.getDefaultRole().orElseThrow(() ->
+        var defaultRole = roleRepository.findByName(DEFAULT_ROLE_NAME).orElseThrow(() ->
                 new RuntimeException("Default role was not found in database")
         );
 
@@ -92,7 +95,7 @@ public class UserServiceImpl implements UserService {
                 .token(token)
                 .build();
 
-        confirmationTokenService.save(confirmationToken);
+        confirmationTokenRepository.save(confirmationToken);
 
         var templateModel = new HashMap<String, Object>();
         var port = servletRequest.getServerPort();
@@ -105,18 +108,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveAll(Iterable<User> users) {
-        userRepository.saveAll(users);
-    }
-
-    @Override
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
-    @Override
     public ConfirmationTokenStatus tryConfirmEmail(String token) {
-        var confirmationToken = confirmationTokenService.findByToken(token);
+        var confirmationToken = confirmationTokenRepository.findByToken(token);
 
         if (confirmationToken.isEmpty()) {
             return ConfirmationTokenStatus.NOT_FOUND;
@@ -134,10 +127,10 @@ public class UserServiceImpl implements UserService {
         }
 
         foundConfirmationToken.setConfirmedAt(LocalDateTime.now());
-        confirmationTokenService.save(foundConfirmationToken);
+        confirmationTokenRepository.save(foundConfirmationToken);
 
         user.setEnabled(true);
-        save(user);
+        userRepository.save(user);
 
         return ConfirmationTokenStatus.SUCCESSFULLY_CONFIRMED;
     }
@@ -162,7 +155,7 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        confirmationTokenService.removeAllByUser(foundUser);
+        confirmationTokenRepository.removeAllByUser(foundUser);
 
         createConfirmationTokenAndSendEmail(foundUser);
         return true;

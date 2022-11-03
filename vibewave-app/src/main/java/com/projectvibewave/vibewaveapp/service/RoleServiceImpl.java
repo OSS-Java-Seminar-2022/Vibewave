@@ -10,8 +10,6 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class RoleServiceImpl implements RoleService {
-    private final static String ROLE_PREFIX = "ROLE_";
-    private final static String DEFAULT_ROLE_NAME = "BASIC";
     private final RoleRepository roleRepository;
 
     @Override
@@ -22,10 +20,5 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Optional<Role> findByName(String name) {
         return roleRepository.findByName(name);
-    }
-
-    @Override
-    public Optional<Role> getDefaultRole() {
-        return roleRepository.findByName(ROLE_PREFIX + DEFAULT_ROLE_NAME);
     }
 }

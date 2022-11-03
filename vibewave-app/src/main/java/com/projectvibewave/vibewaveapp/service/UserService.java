@@ -14,11 +14,8 @@ public interface UserService extends UserDetailsService {
     UserDetails loadUserByUsername(String username) throws UsernameNotFoundException;
 
     boolean trySignUp(UserSignUpDto userDto, BindingResult bindingResult);
-    void save(User user);
 
     void createConfirmationTokenAndSendEmail(User user);
-
-    void saveAll(Iterable<User> users);
 
     ConfirmationTokenStatus tryConfirmEmail(String token);
 
