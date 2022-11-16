@@ -10,23 +10,9 @@
     <script src="/uikit.min.js"></script>
     <!-- UIkit Icons JS -->
     <script src="/uikit-icons.min.js"></script>
-    <!-- jQuery -->
-    <script src="/jquery-3.6.1.min.js"></script>
-    <title>Home | VibeWave</title>
+    <title>Resend Confirmation Token | VibeWave</title>
 </head>
 <body>
-<div id="logout-confirmation" uk-modal>
-    <div class="uk-modal-dialog uk-modal-body">
-        <button class="uk-modal-close-default" type="button" uk-close></button>
-        <h2 class="uk-modal-title">Confirmation</h2>
-        <p class="my-5">Are you sure you want to log out of your account?</p>
-        <div class="uk-text-right mt-3">
-            <form class="inline" th:action="@{/logout}" method="post">
-                <button class="uk-button uk-button-danger bg-pink-500" type="submit">Log Out</button>
-            </form>
-        </div>
-    </div>
-</div>
 <header>
     <nav class="uk-navbar-container justify-between px-5 gap-5" uk-navbar>
         <div class="uk-navbar-left">
@@ -97,39 +83,30 @@
 </header>
 <main>
     <div class="uk-container uk-container-large">
-        <div th:if="${param.login}"
-             class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-             role="alert">
-            <div class="mr-3">
-                <span class="font-bold">Success!</span>
-                <span class="block sm:inline">You've been successfully logged in.</span>
-            </div>
-            <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+        <h1 class="uk-heading-small text-center mt-3">Resend Confirmation Link</h1>
+        <hr class="uk-divider-icon"/>
+        <div class="uk-container uk-container-xsmall">
+            <form action="#" th:action="@{/user/confirm/resend}" th:object="${emailConfirmation}" method="POST"
+                  class="uk-form-horizontal uk-margin-large">
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="email">E-Mail:</label>
+                    <div class="uk-form-controls">
+                        <div class="uk-inline block">
+                            <span class="uk-form-icon" uk-icon="icon: mail"></span>
+                            <input class="uk-input"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'uk-form-danger' : ''"
+                                   id="email" type="text" th:field="*{email}"
+                                   placeholder="Enter your E-Mail">
+                        </div>
+                        <ul class="text-red-500">
+                            <li th:each="err : ${#fields.errors('email')}" th:text="${err}"/>
+                        </ul>
+                    </div>
+                </div>
+                <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Resend</button>
+            </form>
         </div>
-        <div th:if="${param.signup}"
-             class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-             role="alert">
-            <div class="mr-3">
-                <span class="font-bold">Success!</span>
-                <span class="block sm:inline">You've been successfully signed up! Confirmation link has been sent to your
-                E-Mail.</span>
-            </div>
-            <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
-        </div>
-        <div th:if="${param.resend}"
-             class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-             role="alert">
-            <div class="mr-3">
-                <span class="font-bold">Success!</span>
-                <span class="block sm:inline">Confirmation link has been sent to your E-Mail.</span>
-            </div>
-            <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
-        </div>
-        <h1 class="uk-heading-small text-center mt-3">Home</h1>
     </div>
 </main>
-<script>
-    $(".alert").delay(4000).fadeOut(500);
-</script>
 </body>
 </html>

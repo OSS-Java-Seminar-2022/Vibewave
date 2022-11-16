@@ -5,15 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
 @Controller
-public class ViewController {
-
-    private final Logger logger = LoggerFactory.getLogger(ViewController.class);
+public class HomeController {
+    private final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     @GetMapping("/")
     public String homeView() {
-        logger.info("Accessed Home View");
+        logger.info("Accessed Home Page");
         return "home";
     }
 }
