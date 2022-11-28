@@ -5,6 +5,7 @@ import com.projectvibewave.vibewaveapp.entity.Role;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.repository.RoleRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -26,7 +27,11 @@ public class VibewaveAppApplication implements CommandLineRunner {
     private UserRepository userRepository;
 
     @Resource
+    private FileService fileService;
+
+    @Resource
     private PasswordEncoder passwordEncoder;
+
 
     public static void main(String[] args) {
         SpringApplication.run(VibewaveAppApplication.class, args);
@@ -35,6 +40,9 @@ public class VibewaveAppApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         logger.info("populating database...");
+
+        fileService.deleteAll();
+        fileService.init();
 
         var allRoles = List.of(
                 Role.builder()
@@ -63,6 +71,7 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .email("basic@user.com")
                 .password(passwordEncoder.encode("basic"))
                 .isEnabled(true)
+                .artistName("DJ Basic")
                 .roles(Sets.newHashSet(basicRole))
                 .build();
 

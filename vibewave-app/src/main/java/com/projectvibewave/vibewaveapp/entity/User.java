@@ -106,7 +106,7 @@ public class User implements UserDetails {
         this.artistName = artistName;
     }
 
-    public boolean isPrivate() {
+    public boolean getPrivate() {
         return isPrivate;
     }
 

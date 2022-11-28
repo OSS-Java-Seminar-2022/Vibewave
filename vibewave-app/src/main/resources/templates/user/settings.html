@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>User Settings</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div th:if="${param.updated}"
+         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+         role="alert">
+        <div class="mr-3">
+            <span class="font-bold">Success!</span>
+            <span class="block sm:inline">You've successfully updated your settings!</span>
+        </div>
+        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+    </div>
+    <h1 class="uk-heading-small text-center mt-3">Settings</h1>
+    <hr class="uk-divider-icon"/>
+    <div class="uk-container uk-container-xsmall">
+        <form action="#" th:action="@{/user/settings}" th:object="${settings}" method="POST" enctype="multipart/form-data"
+              class="uk-form-horizontal uk-margin-large">
+
+            <div class="uk-margin">
+                <label class="uk-form-label" for="artist-name">Profile Photo:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <div class="js-upload uk-placeholder uk-text-center">
+                            <span uk-icon="icon: cloud-upload"></span>
+                            <span class="uk-text-middle">Drop image here or</span>
+                            <div uk-form-custom>
+                                <input id="profile-photo" type="file" th:field="*{profilePhoto}" accept="image/png, image/jpeg">
+                                <span class="uk-link cursor-pointer hover:font-underline">select one</span>
+                            </div>
+                        </div>
+                        <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
+                    </div>
+                    <ul class="file-upload-errors text-red-500">
+                        <li th:each="err : ${#fields.errors('profilePhoto')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="uk-margin">
+                <label class="uk-form-label" for="artist-name">Artist Name:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: user"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('artistName')} ? 'uk-form-danger' : ''"
+                               id="artist-name" type="text" th:field="*{artistName}"
+                               placeholder="Enter your artist name">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('artistName')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="uk-margin">
+                <label class="uk-form-label" for="is-private">Make your account private:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <input id="is-private" class="uk-checkbox" type="checkbox" th:field="*{private}">
+                    </div>
+                </div>
+            </div>
+
+            <button id="save-button" class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Save</button>
+        </form>
+    </div>
+
+    <script>
+        var tenMegabytes = 10485760;
+        var allowedFileTypes = ["image/jpeg", "image/png"];
+        var fileInput = document.querySelector("#profile-photo");
+        var bar = document.getElementById('js-progressbar');
+        var reader = new FileReader();
+        var fileUploadErrors = document.querySelector(".file-upload-errors")
+        var saveButton = document.querySelector("#save-button")
+
+        function handleProgress(e) {
+            bar.max = e.total;
+            bar.value = e.loaded;
+        }
+
+        function handleLoadStart() {
+            saveButton.setAttribute('disabled', 'true');
+        }
+
+        function handleLoadEnd() {
+            saveButton.removeAttribute('disabled');
+        }
+
+        function addListeners(reader) {
+            reader.addEventListener('progress', handleProgress);
+            reader.addEventListener('loadstart', handleLoadStart);
+            reader.addEventListener('loadend', handleLoadEnd);
+        }
+
+        function handleSelected(e) {
+            bar.value = 0;
+            const selectedFile = fileInput.files[0];
+
+            if (selectedFile) {
+                if (!allowedFileTypes.includes(selectedFile.type) || selectedFile.size > tenMegabytes) {
+                    fileInput.value = "";
+                    bar.setAttribute('hidden', 'hidden');
+                    appendFileUploadError("Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
+                } else {
+                    clearFileUploadErrors();
+                    bar.removeAttribute('hidden');
+                    addListeners(reader);
+                    reader.readAsDataURL(selectedFile);
+                }
+            }
+        }
+
+        fileInput.addEventListener('change', handleSelected);
+
+        function appendFileUploadError(message) {
+            var li = document.createElement("li");
+            li.innerHTML = message;
+            clearFileUploadErrors();
+            fileUploadErrors.append(li);
+        }
+
+        function clearFileUploadErrors() {
+            fileUploadErrors.innerHTML = "";
+        }
+    </script>
+</div>
+
+</body>
+</html>

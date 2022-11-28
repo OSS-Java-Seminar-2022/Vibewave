@@ -1,5 +1,10 @@
 package com.projectvibewave.vibewaveapp.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum ConfirmationTokenStatus {
     NOT_FOUND("Token invalid"),
     ALREADY_CONFIRMED("E-Mail has already been confirmed"),
@@ -7,12 +12,4 @@ public enum ConfirmationTokenStatus {
     EXPIRED("Token has expired");
 
     private final String message;
-
-    ConfirmationTokenStatus(String message) {
-        this.message = message;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

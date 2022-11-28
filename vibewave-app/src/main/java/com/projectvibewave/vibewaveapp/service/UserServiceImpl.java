@@ -1,7 +1,8 @@
 package com.projectvibewave.vibewaveapp.service;
 
 import com.google.common.collect.Sets;
-import com.projectvibewave.vibewaveapp.dto.EmailConfirmation;
+import com.projectvibewave.vibewaveapp.dto.EmailConfirmationDto;
+import com.projectvibewave.vibewaveapp.dto.UserSettingsDto;
 import com.projectvibewave.vibewaveapp.enums.ConfirmationTokenStatus;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
 import com.projectvibewave.vibewaveapp.entity.ConfirmationToken;
@@ -12,7 +13,8 @@ import com.projectvibewave.vibewaveapp.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,25 +24,31 @@ import javax.servlet.ServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static int TEN_MEGABYTES = 10485760;
     private final static String DEFAULT_ROLE_NAME = "ROLE_BASIC";
     private final static int TOKEN_EXPIRATION_TIME_MINUTES = 15;
     private final static String USER_NOT_FOUND_MSG = "User %s not found";
     private final static String EMAIL_CONFIRMATION_SUBJECT = "VibeWave - Confirm Your E-Mail";
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final List<String> allowedFileTypes = newArrayList("image/jpeg", "image/png");
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailService emailService;
+    private final FileService fileService;
     private final ServletRequest servletRequest;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, username))
         );
@@ -137,12 +145,12 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public boolean reSendConfirmationToken(EmailConfirmation emailConfirmation, BindingResult bindingResult) {
+    public boolean reSendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return false;
         }
 
-        var user = userRepository.findByEmail(emailConfirmation.getEmail());
+        var user = userRepository.findByEmail(emailConfirmationDto.getEmail());
 
         if (user.isEmpty()) {
             bindingResult.rejectValue("email", "error.emailConfirmation", "No user found with that E-Mail");
@@ -163,5 +171,59 @@ public class UserServiceImpl implements UserService {
 
     private boolean isConfirmationTokenExpired(ConfirmationToken confirmationToken) {
         return LocalDateTime.now().isAfter(confirmationToken.getCreatedAt().plusMinutes(TOKEN_EXPIRATION_TIME_MINUTES));
+    }
+
+    @Override
+    public boolean tryUpdateUserSettings(UserSettingsDto userSettingsDto, BindingResult bindingResult) {
+        var shouldSetArtistNameToNull = "".equals(userSettingsDto.getArtistName());
+        if (bindingResult.hasErrors() && !shouldSetArtistNameToNull) {
+            return false;
+        }
+
+        var file = userSettingsDto.getProfilePhoto();
+        var contentType = file.getContentType();
+        var size = file.getSize();
+        var shouldUpdateProfilePhoto = size > 0;
+
+        if (shouldUpdateProfilePhoto && (!allowedFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+            bindingResult.rejectValue("profilePhoto", "error.settings",
+                    "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
+            return false;
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var username = auth.getName();
+
+        var userToUpdate = userRepository.findByUsername(username).orElseThrow(() ->
+            new RuntimeException("Authenticated user not found in the database.")
+        );
+
+        if (shouldUpdateProfilePhoto) {
+            var filename = fileService.save(file);
+            userToUpdate.setProfilePhotoUrl(filename);
+        }
+        userToUpdate.setArtistName(shouldSetArtistNameToNull ? null : userSettingsDto.getArtistName());
+        userToUpdate.setPrivate(userSettingsDto.isPrivate());
+        userRepository.save(userToUpdate);
+
+        return true;
+    }
+
+    @Override
+    public UserSignUpDto getUserSignUpDto() {
+        return new UserSignUpDto();
+    }
+
+    @Override
+    public UserSettingsDto getAuthenticatedUserSettings() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var username = auth.getName();
+        var currentUser = loadUserByUsername(username);
+
+        var userSettings = new UserSettingsDto();
+        userSettings.setArtistName(currentUser.getArtistName());
+        userSettings.setPrivate(currentUser.getPrivate());
+
+        return userSettings;
     }
 }

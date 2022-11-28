@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Resend Confirmation Link</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h1 class="uk-heading-small text-center mt-3">Resend Confirmation Link</h1>
+    <hr class="uk-divider-icon"/>
+    <div class="uk-container uk-container-xsmall">
+        <form action="#" th:action="@{/user/confirm/resend}" th:object="${emailConfirmationDto}" method="POST"
+              class="uk-form-horizontal uk-margin-large">
+            <div class="uk-margin">
+                <label class="uk-form-label" for="email">E-Mail:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: mail"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('email')} ? 'uk-form-danger' : ''"
+                               id="email" type="text" th:field="*{email}"
+                               placeholder="Enter your E-Mail">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('email')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+            <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Resend</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
+
+
+

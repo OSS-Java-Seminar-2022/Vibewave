@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmailConfirmation {
+public class EmailConfirmationDto {
     @Email
     @NotNull
     @Size(min = 3, max = 255)
