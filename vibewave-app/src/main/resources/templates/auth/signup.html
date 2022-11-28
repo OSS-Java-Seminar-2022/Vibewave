@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Sign Up</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h1 class="uk-heading-small text-center mt-3">Sign Up</h1>
+    <hr class="uk-divider-icon"/>
+    <div class="uk-container uk-container-xsmall">
+        <form action="#" th:action="@{/user/signup}" th:object="${user}" method="POST"
+              class="uk-form-horizontal uk-margin-large">
+            <div class="uk-margin">
+                <label class="uk-form-label" for="username">Username:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: user"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('username')} ? 'uk-form-danger' : ''"
+                               id="username" type="text" th:field="*{username}"
+                               placeholder="Enter your username">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('username')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="email">E-Mail:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: mail"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('email')} ? 'uk-form-danger' : ''"
+                               id="email" type="text" th:field="*{email}"
+                               placeholder="Enter your E-Mail">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('email')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="password">Password:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('password')} ? 'uk-form-danger' : ''"
+                               id="password"
+                               type="password" th:field="*{password}"
+                               placeholder="Enter your password">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('password')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="repeatedPassword">Repeat Password:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                        <input class="uk-input"
+                               th:classappend="${#fields.hasErrors('repeatedPassword')} ? 'uk-form-danger' : ''"
+                               id="repeatedPassword" type="password" th:field="*{repeatedPassword}"
+                               placeholder="Confirm your password">
+                    </div>
+                    <ul class="text-red-500">
+                        <li th:each="err : ${#fields.errors('repeatedPassword')}" th:text="${err}"/>
+                    </ul>
+                </div>
+            </div>
+            <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Sign Up</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

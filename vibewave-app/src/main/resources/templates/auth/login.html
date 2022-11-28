@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Log In</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h1 class="uk-heading-small text-center mt-3">Log In</h1>
+    <hr class="uk-divider-icon"/>
+    <div class="uk-container uk-container-xsmall">
+        <div th:if="${param.logout}"
+             class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+             role="alert">
+            <div class="mr-3">
+                <span class="font-bold">Success!</span>
+                <span class="block sm:inline">You've been logged out.</span>
+            </div>
+            <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+        </div>
+        <div th:if="${param.error}">
+            <p class="text-red-500">Wrong credentials or the user is disabled!</p>
+        </div>
+        <form action="#" th:action="@{/login}" method="POST"
+              class="uk-form-horizontal">
+            <div class="uk-margin">
+                <label class="uk-form-label" for="username">Username:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: user"></span>
+                        <input class="uk-input"
+                               id="username" type="text" name="username"
+                               placeholder="Enter your username">
+                    </div>
+                </div>
+            </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="password">Password:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                        <input class="uk-input"
+                               id="password"
+                               type="password" name="password"
+                               placeholder="Enter your password">
+                    </div>
+                </div>
+            </div>
+            <div class="uk-margin">
+                <label class="uk-form-label" for="remember-me">Remember Me:</label>
+                <div class="uk-form-controls">
+                    <div class="uk-inline block">
+                        <input id="remember-me" class="uk-checkbox" type="checkbox" name="remember-me">
+                    </div>
+                </div>
+            </div>
+            <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Log In</button>
+            <a class="mt-3 block w-fit" th:href="@{/auth/confirm/resend}">Resend Confirmation Link</a>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
