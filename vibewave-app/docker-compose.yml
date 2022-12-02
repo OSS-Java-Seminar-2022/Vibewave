@@ -18,3 +18,4 @@ services:
     environment:
       DB_HOSTNAME: db
       DB_PORT: 5432
+      GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json

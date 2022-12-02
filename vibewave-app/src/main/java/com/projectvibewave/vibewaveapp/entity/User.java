@@ -39,6 +39,12 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user")
+    private List<Album> albums;
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private List<Track> tracks;
 
     public Long getId() {
         return id;
@@ -51,6 +57,8 @@ public class User implements UserDetails {
     public Set<Role> getRoles() {
         return roles;
     }
+
+    public List<Album> getAlbums() { return albums; }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;

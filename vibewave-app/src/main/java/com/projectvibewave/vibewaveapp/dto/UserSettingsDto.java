@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import net.bytebuddy.implementation.bind.annotation.Empty;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 

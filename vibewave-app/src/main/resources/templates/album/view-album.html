@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title>View Album</title>
+</head>
+<body>
+
+<div class="mt-10" layout:fragment="content">
+  <div class="flex gap-10 mb-5">
+    <div class="w-[250px] h-[250px] border border-neutral-300">
+      <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-profile.png')}}">
+    </div>
+    <div class="py-5">
+      <div class="flex items-end">
+        <h2 class="text-2xl" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h2>
+        <span>&nbsp;by&nbsp;</span>
+        <a class="uk-link-heading" th:href="@{${'/user/' + album.user.id}}">
+          <h3 class="text-lg hover:opacity-70 duration-300" th:text="${album.user.artistName != null ? album.user.artistName : album.user.username}"></h3>
+        </a>
+      </div>
+      <p><b>Album Format: </b><span th:text="${album.albumFormat.name + ' (' + #arrays.length(album.tracks) + ' total tracks)'}"></span></p>
+      <p><b>Published: </b><span th:text="${#temporals.year(album.publishDate)}"></span></p>
+    </div>
+  </div>
+  <h2 class="text-3xl mb-7 border-b">Tracks</h2>
+  <div class="flex flex-wrap gap-9">
+    <div class="uk-alert-primary" uk-alert th:if="${#arrays.length(album.tracks) == 0}">
+      <p>This album has no tracks yet.<span th:if="${album.user.id == #authentication.principal.id}"> Click <a class="uk-link-muted !text-blue-500" th:href="@{${'/album/' + album.id + '/add-track'}}"><b>here</b></a> to add a track now.</span> </p>
+    </div>
+    <table th:if="${#arrays.length(album.tracks) > 0}" class="uk-table">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Listen</th>
+        <th>Name</th>
+        <th>Plays</th>
+        <th>Duration</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="hover:bg-slate-100" th:each="track, iter: ${album.tracks}">
+        <td th:text="${iter.index + 1}"></td>
+        <td>
+          <button th:trackurl="${track.audioSourceUrl}" class="listen-button hover:scale-110 duration-300">
+            <span uk-icon="icon: play-circle; ratio: 1.5"></span>
+          </button>
+        </td>
+        <td th:uk-tooltip="${track.name}" th:text="${#strings.length(track.name) > 23 ? #strings.substring(track.name, 0, 23) + '...' : track.name}"></td>
+        <td th:text="${track.timesPlayed}"></td>
+        <td th:text="${track.durationSeconds}"></td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+  <audio id="audio-player" controls hidden>
+    <source src="" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    var audioPlayer = document.querySelector("#audio-player");
+    var listenButtons = document.querySelectorAll(".listen-button");
+
+    function insertAfter(newNode, existingNode) {
+      existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+    }
+
+    listenButtons.forEach(listenButton => {
+      listenButton.addEventListener('click', function(e) {
+        var trackUrl = this.getAttribute("trackurl");
+        var audioSourceUrl = "/file/" + trackUrl
+        if (audioPlayer.paused || window.location.origin + audioSourceUrl !== audioPlayer.src) {
+          if (window.location.origin + audioSourceUrl !== audioPlayer.src) {
+            audioPlayer.src = audioSourceUrl;
+          }
+          audioPlayer.play();
+          var listeningMessage = document.createElement("span");
+          listeningMessage.setAttribute("class", "currently-playing ml-2");
+          listeningMessage.setAttribute("uk-icon", "icon: bell");
+          listeningMessage.setAttribute("uk-tooltip", "Currently playing");
+          var oldListeningMessage = document.querySelector(".currently-playing");
+          oldListeningMessage != null && oldListeningMessage.remove();
+          insertAfter(listeningMessage, this);
+        } else {
+          audioPlayer.pause();
+        }
+      })
+    })
+
+
+  </script>
+
+</div>
+
+</body>
+</html>

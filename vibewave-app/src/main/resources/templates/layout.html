@@ -66,8 +66,12 @@
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
               <li sec:authorize="isAuthenticated()"
-                  th:class="${#httpServletRequest.requestURI.startsWith('/auth/my-profile')} ? 'uk-active' : ''">
-                <a href="#">My Profile</a>
+                  th:class="${#httpServletRequest.requestURI.startsWith('/user/' + #authentication.principal.id)} ? 'uk-active' : ''">
+                <a th:href="@{'/user/' + ${#authentication.principal.id}}">My Profile</a>
+              </li>
+              <li sec:authorize="isAuthenticated()"
+                  th:class="${#httpServletRequest.requestURI.startsWith('/album/add')} ? 'uk-active' : ''">
+                <a th:href="@{/album/add}">Upload Album</a>
               </li>
               <li sec:authorize="isAuthenticated()"
                   th:class="${#httpServletRequest.requestURI.startsWith('/user/settings')} ? 'uk-active' : ''">

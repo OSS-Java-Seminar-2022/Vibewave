@@ -10,7 +10,10 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -48,11 +51,20 @@ public class FileServiceImpl implements FileService{
                 throw new RuntimeException("A file with that name already exists.");
             }
 
-            logger.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
 
         return filename;
+    }
+
+    @Override
+    public void save(ByteArrayOutputStream file, String filename) {
+        var fullPath = this.root.resolve(filename);
+        try (OutputStream outputStream = new FileOutputStream(fullPath.toString())) {
+            file.writeTo(outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override
@@ -64,7 +76,7 @@ public class FileServiceImpl implements FileService{
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("Could not read the file!");
+                return null;
             }
         } catch (MalformedURLException e) {
             throw new RuntimeException("Error: " + e.getMessage());
