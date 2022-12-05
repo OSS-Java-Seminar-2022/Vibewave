@@ -1,14 +1,8 @@
 package com.projectvibewave.vibewaveapp;
 
 import com.google.common.collect.Sets;
-import com.projectvibewave.vibewaveapp.entity.Album;
-import com.projectvibewave.vibewaveapp.entity.AlbumFormat;
-import com.projectvibewave.vibewaveapp.entity.Role;
-import com.projectvibewave.vibewaveapp.entity.User;
-import com.projectvibewave.vibewaveapp.repository.AlbumFormatRepository;
-import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
-import com.projectvibewave.vibewaveapp.repository.RoleRepository;
-import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.entity.*;
+import com.projectvibewave.vibewaveapp.repository.*;
 import com.projectvibewave.vibewaveapp.service.FileService;
 import com.projectvibewave.vibewaveapp.service.GoogleDriveService;
 import org.slf4j.Logger;
@@ -42,6 +36,9 @@ public class VibewaveAppApplication implements CommandLineRunner {
     private AlbumRepository albumRepository;
 
     @Resource
+    private TrackRepository trackRepository;
+
+    @Resource
     private FileService fileService;
 
     @Resource
@@ -61,13 +58,22 @@ public class VibewaveAppApplication implements CommandLineRunner {
         fileService.deleteAll();
         fileService.init();
 
+        // download images and audio from Google Drive
         var defaultProfilePhoto =
                 googleDriveService.downloadFile(GoogleDriveService.DEFAULT_PROFILE_PHOTO_FILE_ID);
         fileService.save(defaultProfilePhoto, "default-profile.png");
 
-        var defaultAlbumCover =
+        var defaultAlbumPhoto =
                 googleDriveService.downloadFile(GoogleDriveService.DEFAULT_ALBUM_COVER_FILE_ID);
-        fileService.save(defaultAlbumCover, "default-album.png");
+        fileService.save(defaultAlbumPhoto, "default-album.png");
+
+        var empowerTrack =
+                googleDriveService.downloadFile(GoogleDriveService.EMPOWER_TRACK_REAL_ID);
+        fileService.save(empowerTrack, "empower.mp3");
+
+        var theMottoRemixTrack =
+                googleDriveService.downloadFile(GoogleDriveService.THE_MOTTO_REMIX_TRACK_REAL_ID);
+        fileService.save(theMottoRemixTrack, "the-motto-remix.mp3");
 
         var allRoles = List.of(
                 Role.builder()
@@ -142,7 +148,25 @@ public class VibewaveAppApplication implements CommandLineRunner {
                         .build()
         );
 
+        var tracks = newArrayList(
+                Track.builder()
+                        .name("Empower")
+                        .album(albums.get(0))
+                        .audioSourceUrl("empower.mp3")
+                        .durationSeconds(203)
+                        .users(users)
+                        .build(),
+                Track.builder()
+                        .name("The Motto Remix")
+                        .album(albums.get(0))
+                        .audioSourceUrl("the-motto-remix.mp3")
+                        .durationSeconds(166)
+                        .users(List.of(basicUser))
+                        .build()
+        );
+
         albumRepository.saveAll(albums);
+        trackRepository.saveAll(tracks);
 
         logger.info("database populated!");
     }

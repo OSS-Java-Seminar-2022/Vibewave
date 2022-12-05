@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
 <head>
-  <title>User Profile</title>
+  <title th:text="${user.artistName != null ? user.artistName : user.username}"></title>
 </head>
 <body>
 

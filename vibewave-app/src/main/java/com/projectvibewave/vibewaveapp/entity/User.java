@@ -27,6 +27,7 @@ public class User implements UserDetails {
     private String email;
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(unique = true)
     private String artistName;
     private boolean isPrivate = false;
     private String profilePhotoUrl;

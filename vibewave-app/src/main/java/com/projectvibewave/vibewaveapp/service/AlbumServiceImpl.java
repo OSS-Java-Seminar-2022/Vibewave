@@ -5,18 +5,27 @@ import com.projectvibewave.vibewaveapp.dto.TrackPostDto;
 import com.projectvibewave.vibewaveapp.entity.Album;
 import com.projectvibewave.vibewaveapp.entity.Track;
 import com.projectvibewave.vibewaveapp.entity.User;
+import com.projectvibewave.vibewaveapp.enums.EAudioFileFormat;
 import com.projectvibewave.vibewaveapp.repository.AlbumFormatRepository;
 import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
 import com.projectvibewave.vibewaveapp.repository.TrackRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 
+import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -26,8 +35,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public class AlbumServiceImpl implements AlbumService {
     private final static int TEN_MEGABYTES = 10485760;
     private final List<String> allowedImageFileTypes = newArrayList("image/jpeg", "image/png");
-    private final List<String> allowedAudioFileTypes = newArrayList("audio/mpeg", "audio/x-wav");
-
+    private final List<String> allowedAudioFileTypes = newArrayList("audio/mpeg", "audio/wav");
     private final AlbumRepository albumRepository;
     private final AlbumFormatRepository albumFormatRepository;
     private final UserRepository userRepository;
@@ -106,14 +114,24 @@ public class AlbumServiceImpl implements AlbumService {
 
         model.addAttribute("album", album);
         model.addAttribute("artists", artists);
-        model.addAttribute("track", new TrackPostDto());
+        if (!model.containsAttribute("track")) {
+            model.addAttribute("track", new TrackPostDto());
+        }
         return true;
     }
 
     @Override
-    public boolean tryAddTrackToAlbum(Long albumId, TrackPostDto trackPostDto, BindingResult bindingResult, Model model) {
+    public boolean tryAddTrackToAlbum(User authenticatedUser,
+                                      Long albumId, TrackPostDto trackPostDto,
+                                      BindingResult bindingResult,
+                                      Model model)
+            throws UnsupportedAudioFileException, IOException {
         var album = albumRepository.findById(albumId).orElse(null);
-        var authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        var isSuccessful = setAlbumAddTrackViewModel(albumId, model);
+        if (!isSuccessful) {
+            throw new RuntimeException("Album not found");
+        }
 
         if (album == null || !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) || bindingResult.hasErrors()) {
             return false;
@@ -131,23 +149,48 @@ public class AlbumServiceImpl implements AlbumService {
 
         var artists = new ArrayList<User>();
         trackPostDto.getUsersIds().forEach(userId -> {
-            var user = userRepository.findById(userId).orElse(null);
-            if (user != null) {
-                artists.add(user);
-            }
+            userRepository.findById(userId).ifPresent(artists::add);
         });
 
         var filename = fileService.save(trackPostDto.getAudioSource());
+
+        var fileResource = fileService.load(filename);
+        var audioFileFormat = Objects.equals(StringUtils.getFilenameExtension(filename), "wav") ?
+                EAudioFileFormat.WAV : EAudioFileFormat.MP3;
+        var durationSeconds = getAudioDuration(fileResource, audioFileFormat);
 
         var newTrack = Track.builder()
                 .album(album)
                 .name(trackPostDto.getTrackName())
                 .audioSourceUrl(filename)
+                .durationSeconds(durationSeconds != null ? durationSeconds.intValue() : 0)
                 .users(artists)
                 .build();
 
         trackRepository.save(newTrack);
 
         return true;
+    }
+
+    private Float getAudioDuration(Resource fileResource, EAudioFileFormat audioFileFormat)
+            throws UnsupportedAudioFileException, IOException {
+        switch(audioFileFormat) {
+            case WAV -> {
+                InputStream targetStream = new BufferedInputStream(fileResource.getInputStream());
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(targetStream);
+                AudioFormat format = audioInputStream.getFormat();
+                long frames = audioInputStream.getFrameLength();
+                return frames / format.getFrameRate();
+            }
+            case MP3 -> {
+                AudioFileFormat baseFileFormat = new MpegAudioFileReader().getAudioFileFormat(fileResource.getFile());
+                Map<String, Object> properties = baseFileFormat.properties();
+                var duration = (Long) properties.get("duration");
+                return duration.floatValue() / 1000000;
+            }
+            default -> {
+                return null;
+            }
+        }
     }
 }
