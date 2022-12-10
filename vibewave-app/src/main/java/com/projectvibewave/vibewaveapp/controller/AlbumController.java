@@ -2,16 +2,13 @@ package com.projectvibewave.vibewaveapp.controller;
 
 import com.projectvibewave.vibewaveapp.dto.AlbumPostDto;
 import com.projectvibewave.vibewaveapp.dto.TrackPostDto;
-import com.projectvibewave.vibewaveapp.dto.UserSettingsDto;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.service.AlbumService;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,41 +18,79 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.security.Principal;
-import java.util.List;
 
 @Controller
 @AllArgsConstructor
 @RequestMapping("/album")
 public class AlbumController {
-    private final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final Logger logger = LoggerFactory.getLogger(AlbumController.class);
     private final AlbumService albumService;
 
     @GetMapping("/add")
     @PreAuthorize("isAuthenticated()")
-    public String albumAddView(Model model, Principal principal) {
-        logger.info("Accessed Album Post Page");
+    public String albumAddView(Model model) {
+        logger.info("Accessed Album Add Page");
 
-        var username = principal.getName();
+        albumService.setAlbumFormViewModel(model, null, null);
 
-        albumService.setAlbumPostPageModel(model);
+        return "album/upload-album";
+    }
+
+    @GetMapping("/{albumId}/edit")
+    @PreAuthorize("isAuthenticated()")
+    public String albumEditView(Authentication authentication,
+                                @PathVariable Long albumId,
+                                Model model) {
+        logger.info("Accessed Album Edit Page");
+
+        var usr = (User)authentication.getPrincipal();
+
+        var isSuccessful = albumService.setAlbumFormViewModel(model, (User)authentication.getPrincipal(), albumId);
+
+        if (!isSuccessful) {
+            return "redirect:/";
+        }
 
         return "album/upload-album";
     }
 
     @PostMapping("/add")
     @PreAuthorize("isAuthenticated()")
-    public String albumAdd(@Valid @ModelAttribute("album") AlbumPostDto albumPostDto, BindingResult bindingResult, Model model)
+    public String albumAdd(Authentication authentication,
+                           @Valid @ModelAttribute("album") AlbumPostDto albumPostDto,
+                           BindingResult bindingResult,
+                           Model model)
             throws UnsupportedAudioFileException, IOException {
         logger.info("Trying to add album...");
 
-        var createdAlbumOrNull = albumService.tryAddAlbum(albumPostDto, bindingResult, model);
+        var createdAlbumOrNull = albumService.tryAddAlbum(
+                (User)authentication.getPrincipal(), albumPostDto, bindingResult, model);
 
         if (createdAlbumOrNull == null) {
             return "album/upload-album";
         }
 
         return "redirect:/album/" + createdAlbumOrNull.getId() + "?success";
+    }
+
+    @PostMapping("/{albumId}/edit")
+    @PreAuthorize("isAuthenticated()")
+    public String albumEdit(Authentication authentication,
+                            @PathVariable String albumId,
+                            @Valid @ModelAttribute("album") AlbumPostDto albumPostDto,
+                            BindingResult bindingResult,
+                            Model model)
+            throws UnsupportedAudioFileException, IOException {
+        logger.info("Trying to add album...");
+
+        var isSuccessful = albumService.tryEditAlbum(
+                (User)authentication.getPrincipal(), albumPostDto, bindingResult, model);
+
+        if (!isSuccessful) {
+            return "album/upload-album";
+        }
+
+        return "redirect:/album/" + albumId+ "?edit";
     }
 
     @GetMapping("/{albumId}")
@@ -106,5 +141,19 @@ public class AlbumController {
         }
 
         return "redirect:/album/" + albumId + "?added-track";
+    }
+
+    @PostMapping("{albumId}/delete")
+    @PreAuthorize("isAuthenticated()")
+    public String deleteAlbumById(Authentication authentication, @PathVariable @NotNull Long albumId) {
+
+        var authenticatedUser = (User)authentication.getPrincipal();
+        var isSuccessfull = albumService.tryDeleteAlbum(authenticatedUser, albumId);
+
+        if (!isSuccessfull) {
+            return "redirect:/";
+        }
+
+        return "redirect:/user/" + authenticatedUser.getId() + "?deleted-album";
     }
 }

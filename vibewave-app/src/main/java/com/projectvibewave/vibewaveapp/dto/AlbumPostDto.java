@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AlbumPostDto {
+    private Long albumId;
     @NotBlank
     @NotNull
     @Size(max = 255)

@@ -25,13 +25,14 @@ public class Album {
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name="album_format_id")
     private AlbumFormat albumFormat;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name="user_id")
     private User user;
     private LocalDate publishDate;
     @Builder.Default
     private LocalDateTime uploadDate = LocalDateTime.now();
     private String coverPhotoUrl;
+    @ToString.Exclude
     @OneToMany(mappedBy = "album")
     private List<Track> tracks;
 }

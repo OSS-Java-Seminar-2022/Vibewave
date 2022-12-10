@@ -1,4 +1,4 @@
-package com.projectvibewave.vibewaveapp.security;
+package com.projectvibewave.vibewaveapp.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

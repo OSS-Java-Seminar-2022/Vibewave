@@ -8,10 +8,10 @@
 <body>
 
 <div layout:fragment="content">
-  <h1 class="uk-heading-small text-center mt-3">Upload Album</h1>
+  <h1 class="uk-heading-small text-center mt-3" th:text="${isEdit ? 'Edit Album' : 'Upload Album'}"></h1>
   <hr class="uk-divider-icon"/>
   <div class="uk-container uk-container-xsmall">
-    <form action="#" th:action="@{/album/add}" th:object="${album}" method="POST" enctype="multipart/form-data"
+    <form action="#" th:action="@{${isEdit ? ('/album/' + album.albumId + '/edit') : '/album/add'}}" th:object="${album}" method="POST" enctype="multipart/form-data"
           class="uk-form-horizontal uk-margin-large">
       <div class="uk-margin">
         <label class="uk-form-label" for="album-name">Album Name:</label>

@@ -8,6 +8,59 @@
 <body>
 
 <div class="mt-10" layout:fragment="content">
+    <div id="album-delete-confirmation" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <h2 class="uk-modal-title">Confirmation</h2>
+            <p class="my-5">Are you sure you want to delete this album?</p>
+            <div class="uk-text-right mt-3">
+                <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+                <form class="inline" th:action="@{${'/album/' + album.id + '/delete'}}" method="post">
+                    <button class="uk-button uk-button-danger bg-pink-500" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="delete-confirmation" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <h2 class="uk-modal-title">Confirmation</h2>
+            <p class="my-5">Are you sure you want to delete the track "<span id="delete-track-name"></span>"?</p>
+            <div class="uk-text-right mt-3">
+                <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+                <form id="delete-track-form" class="inline" th:action="@{/}" method="post">
+                    <button class="uk-button uk-button-danger bg-pink-500" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div th:if="${param.success}"
+         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+         role="alert">
+        <div class="mr-3">
+            <span class="font-bold">Success!</span>
+            <span class="block sm:inline">You've successfully created an album.</span>
+        </div>
+        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+    </div>
+    <div th:if="${param.get('added-track')}"
+         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+         role="alert">
+        <div class="mr-3">
+            <span class="font-bold">Success!</span>
+            <span class="block sm:inline">You've successfully added a track to this album.</span>
+        </div>
+        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+    </div>
+    <div th:if="${param.get('deleted-track')}"
+         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+         role="alert">
+        <div class="mr-3">
+            <span class="font-bold">Success!</span>
+            <span class="block sm:inline">You've successfully deleted a track from this album.</span>
+        </div>
+        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+    </div>
     <div class="flex gap-10 mb-5">
         <div class="w-[250px] h-[250px] border border-neutral-300">
             <img class="w-full h-full object-cover"
@@ -30,11 +83,11 @@
         </div>
     </div>
     <div class="mb-3" sec:authorize="isAuthenticated()"
-         th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}"
+         th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
          uk-margin>
         <a th:href="@{${'/album/' + album.id + '/add-track'}}" class="uk-button uk-button-default">Add Track</a>
         <a th:href="@{${'/album/' + album.id + '/edit'}}" class="uk-button uk-button-secondary">Edit Album</a>
-        <button class="uk-button uk-button-danger">Remove Album</button>
+        <button class="uk-button uk-button-danger" uk-toggle="target: #album-delete-confirmation">Delete Album</button>
     </div>
     <h2 class="text-3xl mb-7 border-b">Tracks</h2>
     <div class="flex flex-wrap gap-9">
@@ -52,7 +105,7 @@
                 <th>Name</th>
                 <th>Plays</th>
                 <th>Duration</th>
-                <th></th>
+                <th sec:authorize="isAuthenticated()"></th>
             </tr>
             </thead>
             <tbody>
@@ -76,13 +129,16 @@
                 <td th:text="${track.timesPlayed}"></td>
                 <td th:with="durationMinutes=${track.durationSeconds / 60}, remainingSeconds=${track.durationSeconds - durationMinutes * 60}"
                     th:text="${durationMinutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds}"></td>
-                <td>
+                <td sec:authorize="isAuthenticated()">
                     <button href="#"><span uk-icon="icon: more"></span></button>
                     <div uk-dropdown="mode: click">
                         <ul class="uk-nav uk-dropdown-nav">
                             <li><a href="#add-to-playlist">Add to Playlist</a></li>
-                            <li><a th:href="@{${'/album/' + album.id + '/edit'}}">Edit</a></li>
-                            <li><a href="#delete-confirmaton" class="!text-red-500">Delete</a></li>
+                            <li th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}"><a th:href="@{${'/track/' + track.id + '/edit'}}">Edit</a></li>
+                            <li th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}">
+                                <a th:trackid="${track.id}" th:trackname="${track.name}" href="#delete-confirmaton"
+                                   class="delete-track-btn !text-red-500" uk-toggle="target: #delete-confirmation">Delete</a>
+                            </li>
                         </ul>
                     </div>
                 </td>
@@ -100,6 +156,16 @@
         var listenButtons = document.querySelectorAll(".listen-button");
         var oldTrackNumElementHTML = null;
         var oldTrackNumElement = null;
+
+        var deleteTrackButtons = document.querySelectorAll(".delete-track-btn");
+        var deleteTrackForm = document.querySelector("#delete-track-form");
+        var deleteTrackName = document.querySelector("#delete-track-name");
+        var deleteConfirmationPopup = document.querySelector("#delete-confirmation");
+
+        var trackToDelete = {
+            id: 0,
+            name: "",
+        }
 
         audioPlayer.onended = function () {
             var spinningNote = document.querySelector(".currently-playing");
@@ -136,6 +202,15 @@
             })
         })
 
+        deleteTrackButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                var trackId= this.getAttribute("trackid");
+                var trackName = this.getAttribute("trackname");
+
+                deleteTrackForm.setAttribute("action", "/track/" + trackId + "/delete");
+                deleteTrackName.innerHTML = trackName;
+            })
+        })
 
     </script>
 

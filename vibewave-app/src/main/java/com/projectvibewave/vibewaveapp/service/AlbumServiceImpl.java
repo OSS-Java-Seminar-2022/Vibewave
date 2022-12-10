@@ -13,13 +13,13 @@ import com.projectvibewave.vibewaveapp.repository.UserRepository;
 import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 
 import javax.sound.sampled.*;
+import javax.transaction.Transactional;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,16 +43,43 @@ public class AlbumServiceImpl implements AlbumService {
     private final FileService fileService;
 
     @Override
-    public void setAlbumPostPageModel(Model model) {
+    public boolean setAlbumFormViewModel(Model model, User authenticatedUser, Long albumId) {
+        var albumDto = new AlbumPostDto();
+        Album album = null;
+        if (albumId != null) {
+            album = albumRepository.findById(albumId).orElse(null);
+
+            if (authenticatedUser == null ||
+                    album == null ||
+                    !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) &&
+                    !authenticatedUser.isAdmin()) {
+                return false;
+            }
+
+            albumDto.setAlbumId(albumId);
+            albumDto.setAlbumFormatId(album.getAlbumFormat().getId());
+            albumDto.setAlbumName(album.getName());
+            albumDto.setPublishDate(album.getPublishDate());
+            model.addAttribute("isEdit", true);
+        } else {
+            model.addAttribute("isEdit", false);
+        }
+
         var albumFormats = albumFormatRepository.findAll();
         model.addAttribute("albumFormats", albumFormats);
-        model.addAttribute("album", new AlbumPostDto());
+        if (!model.containsAttribute("album")) {
+            model.addAttribute("album", albumDto);
+        }
+
+        return true;
     }
 
     @Override
-    public Album tryAddAlbum(AlbumPostDto albumPostDto, BindingResult bindingResult, Model model) {
-        var albumFormats = albumFormatRepository.findAll();
-        model.addAttribute("albumFormats", albumFormats);
+    public Album tryAddAlbum(User authenticatedUser,
+                             AlbumPostDto albumPostDto,
+                             BindingResult bindingResult,
+                             Model model) {
+        setAlbumFormViewModel(model, null, null);
 
         if (bindingResult.hasErrors()) {
             return null;
@@ -69,8 +96,6 @@ public class AlbumServiceImpl implements AlbumService {
             return null;
         }
 
-        var authenticatedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         String filename = null;
         if (isCoverPhotoPresent) {
             filename = fileService.save(file);
@@ -86,9 +111,50 @@ public class AlbumServiceImpl implements AlbumService {
                 .user(authenticatedUser)
                 .build();
 
-        var createdAlbum = albumRepository.save(newAlbum);
+        return albumRepository.save(newAlbum);
+    }
 
-        return createdAlbum;
+    @Override
+    public boolean tryEditAlbum(User authenticatedUser,
+                                AlbumPostDto albumPostDto,
+                                BindingResult bindingResult,
+                                Model model) {
+        var isSuccessful = setAlbumFormViewModel(model, authenticatedUser, albumPostDto.getAlbumId());
+
+        if (!isSuccessful || bindingResult.hasErrors()) {
+            return false;
+        }
+
+        var file = albumPostDto.getCoverPhoto();
+        var contentType = file.getContentType();
+        var size = file.getSize();
+        var isCoverPhotoPresent = size > 0;
+
+        if (isCoverPhotoPresent && (!allowedImageFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+            bindingResult.rejectValue("coverPhoto", "error.album",
+                    "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
+            return false;
+        }
+
+        var albumFormat = albumFormatRepository.findById(albumPostDto.getAlbumFormatId()).orElse(null);
+        var album = albumRepository.findById(albumPostDto.getAlbumId()).orElse(null);
+
+        if (album == null) {
+            return false;
+        }
+
+        album.setAlbumFormat(albumFormat);
+        album.setName(albumPostDto.getAlbumName());
+        album.setPublishDate(albumPostDto.getPublishDate());
+        album.setPublishDate(albumPostDto.getPublishDate());
+        if (isCoverPhotoPresent) {
+            var filename = fileService.save(file);
+            album.setCoverPhotoUrl(filename);
+        }
+
+        albumRepository.save(album);
+
+        return true;
     }
 
     @Override
@@ -117,6 +183,8 @@ public class AlbumServiceImpl implements AlbumService {
         if (!model.containsAttribute("track")) {
             model.addAttribute("track", new TrackPostDto());
         }
+        model.addAttribute("trackId", null);
+
         return true;
     }
 
@@ -133,7 +201,9 @@ public class AlbumServiceImpl implements AlbumService {
             throw new RuntimeException("Album not found");
         }
 
-        if (album == null || !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) || bindingResult.hasErrors()) {
+        if (album == null ||
+                !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) && !authenticatedUser.isAdmin() ||
+                bindingResult.hasErrors()) {
             return false;
         }
 
@@ -168,6 +238,27 @@ public class AlbumServiceImpl implements AlbumService {
                 .build();
 
         trackRepository.save(newTrack);
+
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean tryDeleteAlbum(User authenticatedUser, Long albumId) {
+        var album = albumRepository.findById(albumId).orElse(null);
+
+        if (album == null) {
+            return false;
+        }
+
+        var albumOwner = album.getUser();
+
+        if (!Objects.equals(authenticatedUser.getId(), albumOwner.getId()) && !authenticatedUser.isAdmin()) {
+            return false;
+        }
+
+        trackRepository.deleteAllByAlbum(album);
+        albumRepository.delete(album);
 
         return true;
     }

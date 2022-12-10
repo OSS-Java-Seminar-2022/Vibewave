@@ -24,6 +24,9 @@
   </div>
   <h2 class="text-3xl mb-7 border-b">Discography</h2>
   <div class="flex flex-wrap gap-9">
+    <div class="uk-alert-primary" uk-alert th:if="${#arrays.length(user.albums) == 0}">
+      <p>This user has no albums yet.</p>
+    </div>
     <a th:each="album: ${user.albums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
       <div class="w-[250px] h-[250px] border border-neutral-300">
         <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">

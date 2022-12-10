@@ -8,10 +8,11 @@
 <body>
 
 <div layout:fragment="content">
-  <h1 class="uk-heading-small text-center mt-3">Add Track to: <span th:text="${album.name}"></span></h1>
+  <h1 th:unless="${trackId != null}" class="uk-heading-small text-center mt-3">Add Track to: <span th:text="${album.name}"></span></h1>
+  <h1 th:if="${track != null}" class="uk-heading-small text-center mt-3">Update Track "<span th:text="${track.trackName}"></span>"</h1>
   <hr class="uk-divider-icon"/>
   <div class="uk-container uk-container-xsmall">
-    <form action="#" th:action="@{${'/album/' + album.id + '/add-track'}}" th:object="${track}" method="POST" enctype="multipart/form-data"
+    <form action="#" th:action="@{${trackId == null ? ('/album/' + album.id + '/add-track') : ('/track/' + trackId + '/edit')}}" th:object="${track}" method="POST" enctype="multipart/form-data"
           class="uk-form-horizontal uk-margin-large">
       <div class="uk-margin">
         <label class="uk-form-label" for="track-name">Track Name:</label>
@@ -32,8 +33,8 @@
         <label class="uk-form-label" for="artists">Artists:</label>
         <div class="uk-form-controls">
           <div class="uk-inline block">
-            <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="3">
-              <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${artist.artistName}">Abarth</option>
+            <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="5">
+              <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${artist.artistName}"></option>
             </select>
           </div>
           <ul class="text-red-500">

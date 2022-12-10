@@ -25,10 +25,10 @@ public class Track {
     private String audioSourceUrl;
     private int durationSeconds;
     private long timesPlayed;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinColumn(name = "album_id")
     private Album album;
-    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_tracks",
             joinColumns = @JoinColumn(name = "track_id"),

@@ -144,8 +144,8 @@ public class UserServiceImpl implements UserService {
         return ConfirmationTokenStatus.SUCCESSFULLY_CONFIRMED;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public boolean reSendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return false;

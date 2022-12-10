@@ -33,7 +33,7 @@ public class User implements UserDetails {
     private String profilePhotoUrl;
     private boolean isVerified = false;
     private boolean isEnabled;
-    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -146,6 +146,10 @@ public class User implements UserDetails {
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return grantedAuthorities;
+    }
+
+    public boolean isAdmin() {
+        return getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     @Override
