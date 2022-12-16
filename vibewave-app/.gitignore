@@ -3,6 +3,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+uploads/
+google-credentials.json
 
 ### STS ###
 .apt_generated

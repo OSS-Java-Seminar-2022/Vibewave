@@ -9,12 +9,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 @Controller
@@ -47,5 +45,18 @@ public class UserController {
         }
 
         return "redirect:/user/settings/?updated";
+    }
+
+    @GetMapping("/{userId}")
+    public String getUserProfileView(Model model, @PathVariable @NotNull Long userId) {
+        logger.info("Accessed User Profile Page");
+
+        var exists = userService.setUserByIdModelView(model, userId);
+
+        if (!exists) {
+            return "redirect:/";
+        }
+
+        return "user/profile";
     }
 }

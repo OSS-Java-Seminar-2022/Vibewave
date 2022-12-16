@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title>Upload Track</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <h1 th:unless="${trackId != null}" class="uk-heading-small text-center mt-3">Add Track to: <span th:text="${album.name}"></span></h1>
+  <h1 th:if="${trackId != null}" class="uk-heading-small text-center mt-3">Update Track "<span th:text="${track.trackName}"></span>"</h1>
+  <hr class="uk-divider-icon"/>
+  <div class="uk-container uk-container-xsmall">
+    <form action="#" th:action="@{${trackId == null ? ('/album/' + album.id + '/add-track') : ('/track/' + trackId + '/edit')}}" th:object="${track}" method="POST" enctype="multipart/form-data"
+          class="uk-form-horizontal uk-margin-large">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="track-name">Track Name:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: tag"></span>
+            <input class="uk-input"
+                   th:classappend="${#fields.hasErrors('trackName')} ? 'uk-form-danger' : ''"
+                   id="track-name" type="text" th:field="*{trackName}"
+                   placeholder="Enter track name">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('trackName')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label class="uk-form-label" for="artists">Artists:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="5">
+              <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${artist.artistName}"></option>
+            </select>
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('usersIds')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="audio-source">Audio Source:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <div class="js-upload uk-placeholder uk-text-center">
+              <span uk-icon="icon: cloud-upload"></span>
+              <span class="uk-text-middle">Drop audio source here or</span>
+              <div uk-form-custom>
+                <input id="audio-source" type="file" th:field="*{audioSource}" accept="audio/mpeg, audio/x-wav">
+                <span class="uk-link cursor-pointer hover:font-underline">select one</span>
+              </div>
+            </div>
+            <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
+          </div>
+          <ul class="file-upload-errors text-red-500">
+            <li th:each="err : ${#fields.errors('audioSource')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Save</button>
+    </form>
+  </div>
+
+  <script>
+    var tenMegabytes = 10485760;
+    var allowedFileTypes = ["audio/mpeg", "audio/wav"];
+    var fileInput = document.querySelector("#audio-source");
+    var bar = document.getElementById('js-progressbar');
+    var reader = new FileReader();
+    var fileUploadErrors = document.querySelector(".file-upload-errors")
+    var saveButton = document.querySelector("#save-button")
+
+    function handleProgress(e) {
+      bar.max = e.total;
+      bar.value = e.loaded;
+    }
+
+    function handleLoadStart() {
+      saveButton.setAttribute('disabled', 'true');
+    }
+
+    function handleLoadEnd() {
+      saveButton.removeAttribute('disabled');
+    }
+
+    function addListeners(reader) {
+      reader.addEventListener('progress', handleProgress);
+      reader.addEventListener('loadstart', handleLoadStart);
+      reader.addEventListener('loadend', handleLoadEnd);
+    }
+
+    function handleSelected(e) {
+      bar.value = 0;
+      const selectedFile = fileInput.files[0];
+
+      if (selectedFile) {
+        console.log(selectedFile.type)
+        if (!allowedFileTypes.includes(selectedFile.type) || selectedFile.size > tenMegabytes) {
+          fileInput.value = "";
+          bar.setAttribute('hidden', 'hidden');
+          appendFileUploadError("Please make sure the audio is either mp3 or wav, and the size is no bigger than 10MB.");
+        } else {
+          clearFileUploadErrors();
+          bar.removeAttribute('hidden');
+          addListeners(reader);
+          reader.readAsDataURL(selectedFile);
+        }
+      }
+    }
+
+    fileInput.addEventListener('change', handleSelected);
+
+    function appendFileUploadError(message) {
+      var li = document.createElement("li");
+      li.innerHTML = message;
+      clearFileUploadErrors();
+      fileUploadErrors.append(li);
+    }
+
+    function clearFileUploadErrors() {
+      fileUploadErrors.innerHTML = "";
+    }
+  </script>
+</div>
+
+</body>
+</html>

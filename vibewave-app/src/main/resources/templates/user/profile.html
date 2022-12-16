@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title th:text="${user.artistName != null ? user.artistName : user.username}"></title>
+</head>
+<body>
+
+<div class="mt-10" layout:fragment="content">
+  <div class="flex gap-10 mb-5">
+    <div class="w-[250px] h-[250px] border border-neutral-300">
+      <img class="w-full h-full object-cover" th:src="@{${'/file/' + (user.profilePhotoUrl != null ? user.profilePhotoUrl : 'default-profile.png')}}">
+    </div>
+    <div class="py-5">
+      <div class="flex gap-2 items-center">
+        <h2 class="text-2xl" th:text="${user.artistName != null ? user.artistName : user.username}"></h2>
+        <span th:if="${user.private}" class="cursor-pointer" uk-icon="icon: info" uk-tooltip="Your account is hidden from other visitors."></span>
+        <span th:if="${user.verified}" class="uk-icon-button cursor-pointer uk-margin-small-right" uk-icon="check" uk-tooltip="Verified Artist"></span>
+      </div>
+      <p><b>Member since: </b><span th:text="${#temporals.format(user.createdAt, 'MM/dd/yyyy')}"></span></p>
+      <p><b>Albums Published: </b><span th:text="${#arrays.length(user.albums)}"></span></p>
+    </div>
+  </div>
+  <h2 class="text-3xl mb-7 border-b">Discography</h2>
+  <div class="flex flex-wrap gap-9">
+    <div class="uk-alert-primary" uk-alert th:if="${#arrays.length(user.albums) == 0}">
+      <p>This user has no albums yet.</p>
+    </div>
+    <a th:each="album: ${user.albums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -21,7 +21,6 @@ public class Role {
     @Column(name = "role_name", nullable = false, unique = true)
     @Size(min = 1, max = 255)
     private String name;
-
     @ManyToMany(mappedBy = "roles")
     @ToString.Exclude
     private Set<User> users;

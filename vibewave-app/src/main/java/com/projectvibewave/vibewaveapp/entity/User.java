@@ -27,18 +27,25 @@ public class User implements UserDetails {
     private String email;
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(unique = true)
     private String artistName;
     private boolean isPrivate = false;
     private String profilePhotoUrl;
     private boolean isVerified = false;
     private boolean isEnabled;
-    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user")
+    private List<Album> albums;
+    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private List<Track> tracks;
 
     public Long getId() {
         return id;
@@ -51,6 +58,8 @@ public class User implements UserDetails {
     public Set<Role> getRoles() {
         return roles;
     }
+
+    public List<Album> getAlbums() { return albums; }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
@@ -137,6 +146,10 @@ public class User implements UserDetails {
             grantedAuthorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         return grantedAuthorities;
+    }
+
+    public boolean isAdmin() {
+        return getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     @Override

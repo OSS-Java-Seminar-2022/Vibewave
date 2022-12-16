@@ -1,4 +1,4 @@
-package com.projectvibewave.vibewaveapp.security;
+package com.projectvibewave.vibewaveapp.config;
 
 import com.projectvibewave.vibewaveapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

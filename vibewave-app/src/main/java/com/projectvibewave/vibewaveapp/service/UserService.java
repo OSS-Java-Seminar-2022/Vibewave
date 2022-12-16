@@ -8,6 +8,7 @@ import com.projectvibewave.vibewaveapp.entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 public interface UserService extends UserDetailsService {
@@ -27,4 +28,6 @@ public interface UserService extends UserDetailsService {
     UserSignUpDto getUserSignUpDto();
 
     UserSettingsDto getAuthenticatedUserSettings();
+
+    boolean setUserByIdModelView(Model model, Long userId);
 }

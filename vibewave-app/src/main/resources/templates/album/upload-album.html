@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title>Upload Album</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <h1 class="uk-heading-small text-center mt-3" th:text="${isEdit ? 'Edit Album' : 'Upload Album'}"></h1>
+  <hr class="uk-divider-icon"/>
+  <div class="uk-container uk-container-xsmall">
+    <form action="#" th:action="@{${isEdit ? ('/album/' + album.albumId + '/edit') : '/album/add'}}" th:object="${album}" method="POST" enctype="multipart/form-data"
+          class="uk-form-horizontal uk-margin-large">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="album-name">Album Name:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: album"></span>
+            <input class="uk-input"
+                   th:classappend="${#fields.hasErrors('albumName')} ? 'uk-form-danger' : ''"
+                   id="album-name" type="text" th:field="*{albumName}"
+                   placeholder="Enter album name">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('albumName')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label class="uk-form-label" for="publish-date">Publish Date:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: calendar"></span>
+            <input type="date" class="uk-input"
+              th:classappend="${#fields.hasErrors('publishDate')} ? 'uk-form-danger' : ''"
+                   id="publish-date" th:field="*{publishDate}">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('publishDate')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label class="uk-form-label" for="album-format">Album Format:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <select id="album-format" class="uk-select" th:field="*{albumFormatId}">
+              <option th:each="albumFormat: ${albumFormats}" th:value="${albumFormat.id}" th:text="${albumFormat.name}"></option>
+            </select>
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('albumFormatId')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="cover-photo">Cover Photo:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <div class="js-upload uk-placeholder uk-text-center">
+              <span uk-icon="icon: cloud-upload"></span>
+              <span class="uk-text-middle">Drop image here or</span>
+              <div uk-form-custom>
+                <input id="cover-photo" type="file" th:field="*{coverPhoto}" accept="image/png, image/jpeg">
+                <span class="uk-link cursor-pointer hover:font-underline">select one</span>
+              </div>
+            </div>
+            <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
+          </div>
+          <ul class="file-upload-errors text-red-500">
+            <li th:each="err : ${#fields.errors('coverPhoto')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Save</button>
+    </form>
+  </div>
+
+  <script>
+    var tenMegabytes = 10485760;
+    var allowedFileTypes = ["image/jpeg", "image/png"];
+    var fileInput = document.querySelector("#cover-photo");
+    var bar = document.getElementById('js-progressbar');
+    var reader = new FileReader();
+    var fileUploadErrors = document.querySelector(".file-upload-errors")
+    var saveButton = document.querySelector("#save-button")
+
+    function handleProgress(e) {
+      bar.max = e.total;
+      bar.value = e.loaded;
+    }
+
+    function handleLoadStart() {
+      saveButton.setAttribute('disabled', 'true');
+    }
+
+    function handleLoadEnd() {
+      saveButton.removeAttribute('disabled');
+    }
+
+    function addListeners(reader) {
+      reader.addEventListener('progress', handleProgress);
+      reader.addEventListener('loadstart', handleLoadStart);
+      reader.addEventListener('loadend', handleLoadEnd);
+    }
+
+    function handleSelected(e) {
+      bar.value = 0;
+      const selectedFile = fileInput.files[0];
+
+      if (selectedFile) {
+        if (!allowedFileTypes.includes(selectedFile.type) || selectedFile.size > tenMegabytes) {
+          fileInput.value = "";
+          bar.setAttribute('hidden', 'hidden');
+          appendFileUploadError("Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
+        } else {
+          clearFileUploadErrors();
+          bar.removeAttribute('hidden');
+          addListeners(reader);
+          reader.readAsDataURL(selectedFile);
+        }
+      }
+    }
+
+    fileInput.addEventListener('change', handleSelected);
+
+    function appendFileUploadError(message) {
+      var li = document.createElement("li");
+      li.innerHTML = message;
+      clearFileUploadErrors();
+      fileUploadErrors.append(li);
+    }
+
+    function clearFileUploadErrors() {
+      fileUploadErrors.innerHTML = "";
+    }
+  </script>
+</div>
+
+</body>
+</html>

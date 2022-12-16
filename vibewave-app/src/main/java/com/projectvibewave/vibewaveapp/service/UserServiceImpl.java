@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 import javax.servlet.ServletRequest;
@@ -32,7 +33,7 @@ import static com.google.common.collect.Lists.newArrayList;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private static int TEN_MEGABYTES = 10485760;
+    private final static int TEN_MEGABYTES = 10485760;
     private final static String DEFAULT_ROLE_NAME = "ROLE_BASIC";
     private final static int TOKEN_EXPIRATION_TIME_MINUTES = 15;
     private final static String USER_NOT_FOUND_MSG = "User %s not found";
@@ -143,8 +144,8 @@ public class UserServiceImpl implements UserService {
         return ConfirmationTokenStatus.SUCCESSFULLY_CONFIRMED;
     }
 
-    @Transactional
     @Override
+    @Transactional
     public boolean reSendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return false;
@@ -191,13 +192,7 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        var username = auth.getName();
-
-        var userToUpdate = userRepository.findByUsername(username).orElseThrow(() ->
-            new RuntimeException("Authenticated user not found in the database.")
-        );
-
+        var userToUpdate = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (shouldUpdateProfilePhoto) {
             var filename = fileService.save(file);
             userToUpdate.setProfilePhotoUrl(filename);
@@ -225,5 +220,17 @@ public class UserServiceImpl implements UserService {
         userSettings.setPrivate(currentUser.getPrivate());
 
         return userSettings;
+    }
+
+    @Override
+    public boolean setUserByIdModelView(Model model, Long userId) {
+        var user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        model.addAttribute("user", user);
+        return true;
     }
 }
