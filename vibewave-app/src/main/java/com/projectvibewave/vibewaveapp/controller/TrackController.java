@@ -1,5 +1,7 @@
 package com.projectvibewave.vibewaveapp.controller;
 
+import com.projectvibewave.vibewaveapp.dto.TrackPostDto;
+import com.projectvibewave.vibewaveapp.entity.Album;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.service.TrackService;
 import lombok.AllArgsConstructor;
@@ -9,9 +11,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 
 @Controller
 @AllArgsConstructor
@@ -42,7 +48,7 @@ public class TrackController {
         logger.info("Accessed Update Track View");
 
         var isSuccessful = trackService.setUpdateTrackViewModel(
-                (User)authentication.getPrincipal(), trackId, model);
+                (User)authentication.getPrincipal(), trackId, model, null);
 
         if (!isSuccessful) {
             return "redirect:/";
@@ -51,17 +57,27 @@ public class TrackController {
         return "/album/add-track";
     }
 
-    /*@PutMapping("/{trackId}")
+    @PostMapping("/{trackId}/edit")
     @PreAuthorize("isAuthenticated()")
-    public String updateTrackById(Authentication authentication, @PathVariable @NotNull Long trackId) {
+    public String updateTrackById(Authentication authentication,
+                                  @PathVariable @NotNull Long trackId,
+                                  @Valid @ModelAttribute("track") TrackPostDto trackPostDto,
+                                  BindingResult bindingResult,
+                                  Model model) {
         logger.info("Accessed Update Track By Id");
 
-        var albumIdOrNull = trackService.tryUpdateTrack((User)authentication.getPrincipal(), trackId);
-
-        if (albumIdOrNull == null) {
-            return "redirect:/";
+        Album albumOrNull = null;
+        try {
+            albumOrNull = trackService.tryUpdateTrack(
+                    (User)authentication.getPrincipal(), trackPostDto, trackId, bindingResult, model);
+        } catch (UnsupportedAudioFileException | IOException e) {
+            throw new RuntimeException(e.getMessage());
         }
 
-        return "redirect:/album/" + albumIdOrNull + "?deleted-track";
-    }*/
+        if (albumOrNull == null) {
+            return "album/add-track";
+        }
+
+        return "redirect:/album/" + albumOrNull.getId() + "?updated-track";
+    }
 }

@@ -22,7 +22,7 @@ public interface AlbumService {
 
     boolean setAlbumByIdViewModel(Model model, Long albumId);
 
-    boolean setAlbumAddTrackViewModel(Long albumId, Model model);
+    boolean setAlbumAddTrackViewModel(User authenticatedUser, Long albumId, Model model);
 
     boolean tryAddTrackToAlbum(User authenticatedUser, Long albumId, TrackPostDto trackPostDto, BindingResult bindingResult, Model model) throws UnsupportedAudioFileException, IOException;
 

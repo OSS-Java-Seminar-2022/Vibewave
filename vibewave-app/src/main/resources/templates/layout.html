@@ -75,6 +75,10 @@
                 <a th:href="@{/album/add}">Upload Album</a>
               </li>
               <li sec:authorize="isAuthenticated()"
+                  th:class="${#httpServletRequest.requestURI.startsWith('/playlist/add')} ? 'uk-active' : ''">
+                <a th:href="@{/playlist/add}">New Playlist</a>
+              </li>
+              <li sec:authorize="isAuthenticated()"
                   th:class="${#httpServletRequest.requestURI.startsWith('/user/settings')} ? 'uk-active' : ''">
                 <a th:href="@{/user/settings}">Settings</a>
               </li>

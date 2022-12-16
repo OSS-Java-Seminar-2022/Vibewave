@@ -76,7 +76,7 @@ public class AlbumController {
     @PostMapping("/{albumId}/edit")
     @PreAuthorize("isAuthenticated()")
     public String albumEdit(Authentication authentication,
-                            @PathVariable String albumId,
+                            @PathVariable @NotNull Long albumId,
                             @Valid @ModelAttribute("album") AlbumPostDto albumPostDto,
                             BindingResult bindingResult,
                             Model model)
@@ -108,10 +108,11 @@ public class AlbumController {
 
     @GetMapping("/{albumId}/add-track")
     @PreAuthorize("isAuthenticated()")
-    public String addTrackToAlbum(Model model, @PathVariable @NotNull Long albumId) {
+    public String addTrackToAlbum(Authentication authentication, Model model, @PathVariable @NotNull Long albumId) {
         logger.info("Accessed Add Track To Album Page");
 
-        var exists = albumService.setAlbumAddTrackViewModel(albumId, model);
+        var exists = albumService.setAlbumAddTrackViewModel(
+                (User)authentication.getPrincipal(), albumId, model);
 
         if (!exists) {
             return "redirect:/";
@@ -131,7 +132,8 @@ public class AlbumController {
 
         boolean isSuccessful = false;
         try {
-            isSuccessful = albumService.tryAddTrackToAlbum((User)authentication.getPrincipal(), albumId, trackPostDto, bindingResult, model);
+            isSuccessful = albumService.tryAddTrackToAlbum(
+                    (User)authentication.getPrincipal(), albumId, trackPostDto, bindingResult, model);
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new RuntimeException(e.getMessage());
         }

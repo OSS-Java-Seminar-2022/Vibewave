@@ -9,7 +9,7 @@
 
 <div layout:fragment="content">
   <h1 th:unless="${trackId != null}" class="uk-heading-small text-center mt-3">Add Track to: <span th:text="${album.name}"></span></h1>
-  <h1 th:if="${track != null}" class="uk-heading-small text-center mt-3">Update Track "<span th:text="${track.trackName}"></span>"</h1>
+  <h1 th:if="${trackId != null}" class="uk-heading-small text-center mt-3">Update Track "<span th:text="${track.trackName}"></span>"</h1>
   <hr class="uk-divider-icon"/>
   <div class="uk-container uk-container-xsmall">
     <form action="#" th:action="@{${trackId == null ? ('/album/' + album.id + '/add-track') : ('/track/' + trackId + '/edit')}}" th:object="${track}" method="POST" enctype="multipart/form-data"
@@ -104,7 +104,7 @@
         if (!allowedFileTypes.includes(selectedFile.type) || selectedFile.size > tenMegabytes) {
           fileInput.value = "";
           bar.setAttribute('hidden', 'hidden');
-          appendFileUploadError("Please make sure the image is either mp3 or wav, and the size is no bigger than 10MB.");
+          appendFileUploadError("Please make sure the audio is either mp3 or wav, and the size is no bigger than 10MB.");
         } else {
           clearFileUploadErrors();
           bar.removeAttribute('hidden');

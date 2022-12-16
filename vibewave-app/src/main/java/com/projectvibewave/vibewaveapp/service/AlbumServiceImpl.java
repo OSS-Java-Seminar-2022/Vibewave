@@ -10,9 +10,7 @@ import com.projectvibewave.vibewaveapp.repository.AlbumFormatRepository;
 import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
 import com.projectvibewave.vibewaveapp.repository.TrackRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
-import javazoom.spi.mpeg.sampled.file.MpegAudioFileReader;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -20,12 +18,9 @@ import org.springframework.validation.BindingResult;
 
 import javax.sound.sampled.*;
 import javax.transaction.Transactional;
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -41,6 +36,7 @@ public class AlbumServiceImpl implements AlbumService {
     private final UserRepository userRepository;
     private final TrackRepository trackRepository;
     private final FileService fileService;
+    private final TrackService trackService;
 
     @Override
     public boolean setAlbumFormViewModel(Model model, User authenticatedUser, Long albumId) {
@@ -170,11 +166,12 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public boolean setAlbumAddTrackViewModel(Long albumId, Model model) {
+    public boolean setAlbumAddTrackViewModel(User authenticatedUser, Long albumId, Model model) {
         var album = albumRepository.findById(albumId).orElse(null);
         var artists = userRepository.findAllByArtistNameIsNotNull();
 
-        if (album == null) {
+        if (album == null ||
+                !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) && !authenticatedUser.isAdmin()) {
             return false;
         }
 
@@ -190,20 +187,15 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public boolean tryAddTrackToAlbum(User authenticatedUser,
-                                      Long albumId, TrackPostDto trackPostDto,
+                                      Long albumId,
+                                      TrackPostDto trackPostDto,
                                       BindingResult bindingResult,
                                       Model model)
             throws UnsupportedAudioFileException, IOException {
         var album = albumRepository.findById(albumId).orElse(null);
 
-        var isSuccessful = setAlbumAddTrackViewModel(albumId, model);
-        if (!isSuccessful) {
-            throw new RuntimeException("Album not found");
-        }
-
-        if (album == null ||
-                !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) && !authenticatedUser.isAdmin() ||
-                bindingResult.hasErrors()) {
+        var isSuccessful = setAlbumAddTrackViewModel(authenticatedUser, albumId, model);
+        if (!isSuccessful || bindingResult.hasErrors()) {
             return false;
         }
 
@@ -213,7 +205,7 @@ public class AlbumServiceImpl implements AlbumService {
 
         if (!allowedAudioFileTypes.contains(contentType) || size > TEN_MEGABYTES) {
             bindingResult.rejectValue("audioSource", "error.track",
-                    "Please make sure the image is either mp3 or wav, and the size is no bigger than 10MB.");
+                    "Please make sure the audio is either mp3 or wav, and the size is no bigger than 10MB.");
             return false;
         }
 
@@ -227,7 +219,7 @@ public class AlbumServiceImpl implements AlbumService {
         var fileResource = fileService.load(filename);
         var audioFileFormat = Objects.equals(StringUtils.getFilenameExtension(filename), "wav") ?
                 EAudioFileFormat.WAV : EAudioFileFormat.MP3;
-        var durationSeconds = getAudioDuration(fileResource, audioFileFormat);
+        var durationSeconds = trackService.getAudioDuration(fileResource, audioFileFormat);
 
         var newTrack = Track.builder()
                 .album(album)
@@ -263,25 +255,5 @@ public class AlbumServiceImpl implements AlbumService {
         return true;
     }
 
-    private Float getAudioDuration(Resource fileResource, EAudioFileFormat audioFileFormat)
-            throws UnsupportedAudioFileException, IOException {
-        switch(audioFileFormat) {
-            case WAV -> {
-                InputStream targetStream = new BufferedInputStream(fileResource.getInputStream());
-                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(targetStream);
-                AudioFormat format = audioInputStream.getFormat();
-                long frames = audioInputStream.getFrameLength();
-                return frames / format.getFrameRate();
-            }
-            case MP3 -> {
-                AudioFileFormat baseFileFormat = new MpegAudioFileReader().getAudioFileFormat(fileResource.getFile());
-                Map<String, Object> properties = baseFileFormat.properties();
-                var duration = (Long) properties.get("duration");
-                return duration.floatValue() / 1000000;
-            }
-            default -> {
-                return null;
-            }
-        }
-    }
+
 }
