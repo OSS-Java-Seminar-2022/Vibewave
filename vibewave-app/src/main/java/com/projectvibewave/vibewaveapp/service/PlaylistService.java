@@ -24,4 +24,6 @@ public interface PlaylistService {
     boolean tryEditPlaylist(User authenticatedUser, PlaylistPostDto playlistPostDto, BindingResult bindingResult, Model model);
 
     boolean tryRemoveTrackFromPlaylist(User authenticatedUser, Long playlistId, Long trackId);
+
+    boolean tryAddTrackToPlaylist(User authenticatedUser, Long playlistId, Long trackId);
 }

@@ -187,4 +187,25 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         return true;
     }
+
+    @Override
+    public boolean tryAddTrackToPlaylist(User authenticatedUser, Long playlistId, Long trackId) {
+        var playlist = playlistRepository.findById(playlistId).orElse(null);
+        var trackToAdd = trackRepository.findById(trackId).orElse(null);
+
+        if (playlist == null || trackToAdd == null) {
+            return false;
+        }
+
+        var authenticatedUserIsOwner = Objects.equals(authenticatedUser.getId(), playlist.getUser().getId());
+
+        if (!authenticatedUserIsOwner && !authenticatedUser.isAdmin()) {
+            return false;
+        }
+
+        playlist.getTracks().add(trackToAdd);
+        playlistRepository.save(playlist);
+
+        return true;
+    }
 }

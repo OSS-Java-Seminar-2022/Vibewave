@@ -20,7 +20,7 @@ public interface AlbumService {
                          BindingResult bindingResult,
                          Model model);
 
-    boolean setAlbumByIdViewModel(Model model, Long albumId);
+    boolean setAlbumByIdViewModel(Model model, Long albumId, User authenticatedUser);
 
     boolean setAlbumAddTrackViewModel(User authenticatedUser, Long albumId, Model model);
 

@@ -1,15 +1,13 @@
 package com.projectvibewave.vibewaveapp.service;
 
+import com.projectvibewave.vibewaveapp.dto.AddTrackToPlaylistDto;
 import com.projectvibewave.vibewaveapp.dto.AlbumPostDto;
 import com.projectvibewave.vibewaveapp.dto.TrackPostDto;
 import com.projectvibewave.vibewaveapp.entity.Album;
 import com.projectvibewave.vibewaveapp.entity.Track;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.enums.EAudioFileFormat;
-import com.projectvibewave.vibewaveapp.repository.AlbumFormatRepository;
-import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
-import com.projectvibewave.vibewaveapp.repository.TrackRepository;
-import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -20,10 +18,7 @@ import javax.sound.sampled.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @AllArgsConstructor
@@ -32,6 +27,7 @@ public class AlbumServiceImpl implements AlbumService {
     private final AlbumFormatRepository albumFormatRepository;
     private final UserRepository userRepository;
     private final TrackRepository trackRepository;
+    private final PlaylistRepository playlistRepository;
     private final FileService fileService;
     private final TrackService trackService;
 
@@ -151,7 +147,7 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public boolean setAlbumByIdViewModel(Model model, Long albumId) {
+    public boolean setAlbumByIdViewModel(Model model, Long albumId, User authenticatedUser) {
         var album = albumRepository.findById(albumId).orElse(null);
 
         if (album == null) {
@@ -159,6 +155,12 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         model.addAttribute("album", album);
+        model.addAttribute("addTrackToPlaylist", new AddTrackToPlaylistDto());
+        if (authenticatedUser != null) {
+            var playlists = playlistRepository.findAllByUser(authenticatedUser);
+            model.addAttribute("playlists", playlists);
+        }
+
         return true;
     }
 

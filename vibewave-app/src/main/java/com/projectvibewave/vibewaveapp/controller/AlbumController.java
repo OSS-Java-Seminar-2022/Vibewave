@@ -92,10 +92,11 @@ public class AlbumController {
     }
 
     @GetMapping("/{albumId}")
-    public String getAlbumByIdView(Model model, @PathVariable @NotNull Long albumId) {
+    public String getAlbumByIdView(Authentication authentication, Model model, @PathVariable @NotNull Long albumId) {
         logger.info("Accessed Album View Page");
 
-        var exists = albumService.setAlbumByIdViewModel(model, albumId);
+        var exists = albumService.setAlbumByIdViewModel(
+                model, albumId, authentication != null ? (User)authentication.getPrincipal() : null);
 
         if (!exists) {
             return "redirect:/";

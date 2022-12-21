@@ -1,5 +1,6 @@
 package com.projectvibewave.vibewaveapp.controller;
 
+import com.projectvibewave.vibewaveapp.dto.AddTrackToPlaylistDto;
 import com.projectvibewave.vibewaveapp.dto.AlbumPostDto;
 import com.projectvibewave.vibewaveapp.dto.PlaylistPostDto;
 import com.projectvibewave.vibewaveapp.entity.User;
@@ -133,5 +134,27 @@ public class PlaylistController {
         }
 
         return "redirect:/playlist/" + playlistId + "?removed-track";
+    }
+
+    @PostMapping("/add-track/{trackId}")
+    @PreAuthorize("isAuthenticated()")
+    public String addTrackToPlaylist(Authentication authentication,
+                                     @PathVariable @NotNull Long trackId,
+                                     @Valid @ModelAttribute("addTrackToPlaylist") AddTrackToPlaylistDto addTrackToPlaylistDto,
+                                     BindingResult bindingResult) {
+        logger.info("trying to add a track to playlist...");
+
+        if (bindingResult.hasErrors()) {
+            return "redirect:/";
+        }
+
+        var isSuccessful = playlistService.tryAddTrackToPlaylist(
+                (User)authentication.getPrincipal(), addTrackToPlaylistDto.getPlaylistId(), trackId);
+
+        if (!isSuccessful) {
+            return "redirect:/";
+        }
+
+        return "redirect:/playlist/" + addTrackToPlaylistDto.getPlaylistId() + "?added-track";
     }
 }
