@@ -1,0 +1,8 @@
+<div class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
+     role="alert" th:fragment="successMessage (message)">
+    <div class="mr-3">
+        <span class="font-bold">Success!</span>
+        <span class="block sm:inline" th:text="${message}"></span>
+    </div>
+    <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
+</div>

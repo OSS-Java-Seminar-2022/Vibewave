@@ -46,6 +46,9 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<Track> tracks;
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user")
+    private List<Playlist> playlists;
 
     public Long getId() {
         return id;
@@ -60,6 +63,7 @@ public class User implements UserDetails {
     }
 
     public List<Album> getAlbums() { return albums; }
+    public List<Playlist> getPlaylists() { return playlists; }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;

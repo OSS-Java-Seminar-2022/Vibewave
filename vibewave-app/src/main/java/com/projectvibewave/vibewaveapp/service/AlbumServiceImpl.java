@@ -28,9 +28,6 @@ import static com.google.common.collect.Lists.newArrayList;
 @Service
 @AllArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
-    private final static int TEN_MEGABYTES = 10485760;
-    private final List<String> allowedImageFileTypes = newArrayList("image/jpeg", "image/png");
-    private final List<String> allowedAudioFileTypes = newArrayList("audio/mpeg", "audio/wav");
     private final AlbumRepository albumRepository;
     private final AlbumFormatRepository albumFormatRepository;
     private final UserRepository userRepository;
@@ -86,7 +83,7 @@ public class AlbumServiceImpl implements AlbumService {
         var size = file.getSize();
         var isCoverPhotoPresent = size > 0;
 
-        if (isCoverPhotoPresent && (!allowedImageFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (isCoverPhotoPresent && (!FileService.ALLOWED_IMAGE_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("coverPhoto", "error.album",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return null;
@@ -126,7 +123,7 @@ public class AlbumServiceImpl implements AlbumService {
         var size = file.getSize();
         var isCoverPhotoPresent = size > 0;
 
-        if (isCoverPhotoPresent && (!allowedImageFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (isCoverPhotoPresent && (!FileService.ALLOWED_IMAGE_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("coverPhoto", "error.album",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return false;
@@ -203,7 +200,7 @@ public class AlbumServiceImpl implements AlbumService {
         var contentType = file.getContentType();
         var size = file.getSize();
 
-        if (!allowedAudioFileTypes.contains(contentType) || size > TEN_MEGABYTES) {
+        if (!FileService.ALLOWED_AUDIO_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES) {
             bindingResult.rejectValue("audioSource", "error.track",
                     "Please make sure the audio is either mp3 or wav, and the size is no bigger than 10MB.");
             return false;
@@ -244,8 +241,9 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         var albumOwner = album.getUser();
+        var authenticatedUserIsOwner = Objects.equals(authenticatedUser.getId(), albumOwner.getId());
 
-        if (!Objects.equals(authenticatedUser.getId(), albumOwner.getId()) && !authenticatedUser.isAdmin()) {
+        if (!authenticatedUserIsOwner && !authenticatedUser.isAdmin()) {
             return false;
         }
 
@@ -254,6 +252,4 @@ public class AlbumServiceImpl implements AlbumService {
 
         return true;
     }
-
-
 }

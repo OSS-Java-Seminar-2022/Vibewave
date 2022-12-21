@@ -39,6 +39,9 @@ public class VibewaveAppApplication implements CommandLineRunner {
     private TrackRepository trackRepository;
 
     @Resource
+    private PlaylistRepository playlistRepository;
+
+    @Resource
     private FileService fileService;
 
     @Resource
@@ -167,6 +170,18 @@ public class VibewaveAppApplication implements CommandLineRunner {
 
         albumRepository.saveAll(albums);
         trackRepository.saveAll(tracks);
+
+        var playlists = newArrayList(
+                Playlist.builder()
+                        .name("Top 100 2022")
+                        .coverPhotoUrl(null)
+                        .isPrivate(false)
+                        .user(basicUser)
+                        .tracks(Sets.newHashSet(tracks))
+                        .build()
+        );
+
+        playlistRepository.saveAll(playlists);
 
         logger.info("database populated!");
     }
