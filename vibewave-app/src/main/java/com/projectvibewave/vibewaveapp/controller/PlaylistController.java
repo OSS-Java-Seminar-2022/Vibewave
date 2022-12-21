@@ -103,7 +103,7 @@ public class PlaylistController {
         return "redirect:/playlist/" + playlistId + "?edit";
     }
 
-    @PostMapping("{playlistId}/delete")
+    @PostMapping("/{playlistId}/delete")
     @PreAuthorize("isAuthenticated()")
     public String deletePlaylistById(Authentication authentication, @PathVariable @NotNull Long playlistId) {
         logger.info("trying to delete playlist...");
@@ -116,5 +116,22 @@ public class PlaylistController {
         }
 
         return "redirect:/user/" + authenticatedUser.getId() + "?deleted-playlist";
+    }
+
+    @PostMapping("/{playlistId}/remove/{trackId}")
+    @PreAuthorize("isAuthenticated()")
+    public String removeTrackFromPlaylist(Authentication authentication,
+                                          @PathVariable @NotNull Long playlistId,
+                                          @PathVariable @NotNull Long trackId) {
+        logger.info("trying to remove track from playlist...");
+
+        var isSuccessful = playlistService.tryRemoveTrackFromPlaylist(
+                (User)authentication.getPrincipal(), playlistId, trackId);
+
+        if (!isSuccessful) {
+            return "redirect:/";
+        }
+
+        return "redirect:/playlist/" + playlistId + "?removed-track";
     }
 }

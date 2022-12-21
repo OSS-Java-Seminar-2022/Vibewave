@@ -1,25 +1,24 @@
 package com.projectvibewave.vibewaveapp.service;
 
-import com.projectvibewave.vibewaveapp.dto.AlbumPostDto;
 import com.projectvibewave.vibewaveapp.dto.PlaylistPostDto;
 import com.projectvibewave.vibewaveapp.entity.Playlist;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.repository.PlaylistRepository;
+import com.projectvibewave.vibewaveapp.repository.TrackRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Objects;
 
-import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @AllArgsConstructor
 public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepository playlistRepository;
+    private final TrackRepository trackRepository;
     private final FileService fileService;
 
     @Override
@@ -163,6 +162,27 @@ public class PlaylistServiceImpl implements PlaylistService {
             playlist.setCoverPhotoUrl(filename);
         }
 
+        playlistRepository.save(playlist);
+
+        return true;
+    }
+
+    @Override
+    public boolean tryRemoveTrackFromPlaylist(User authenticatedUser, Long playlistId, Long trackId) {
+        var playlist = playlistRepository.findById(playlistId).orElse(null);
+        var trackToRemove = trackRepository.findById(trackId).orElse(null);
+
+        if (playlist == null || trackToRemove == null) {
+            return false;
+        }
+
+        var authenticatedUserIsOwner = Objects.equals(authenticatedUser.getId(), playlist.getUser().getId());
+
+        if (!authenticatedUserIsOwner && !authenticatedUser.isAdmin()) {
+            return false;
+        }
+
+        playlist.getTracks().remove(trackToRemove);
         playlistRepository.save(playlist);
 
         return true;
