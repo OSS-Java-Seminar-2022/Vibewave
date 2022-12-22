@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layout}">
 <head>
   <title th:text="${user.artistName != null ? user.artistName : user.username}"></title>
@@ -8,6 +8,7 @@
 <body>
 
 <div class="mt-10" layout:fragment="content">
+  <div th:if="${param.get('deleted-playlist')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully deleted a playlist.')"></div>
   <div class="flex gap-10 mb-5">
     <div class="w-[250px] h-[250px] border border-neutral-300">
       <img class="w-full h-full object-cover" th:src="@{${'/file/' + (user.profilePhotoUrl != null ? user.profilePhotoUrl : 'default-profile.png')}}">
@@ -15,7 +16,7 @@
     <div class="py-5">
       <div class="flex gap-2 items-center">
         <h2 class="text-2xl" th:text="${user.artistName != null ? user.artistName : user.username}"></h2>
-        <span th:if="${user.private}" class="cursor-pointer" uk-icon="icon: info" uk-tooltip="Your account is hidden from other visitors."></span>
+        <span th:if="${user.private}" class="cursor-pointer" uk-icon="icon: info" uk-tooltip="Your account is private"></span>
         <span th:if="${user.verified}" class="uk-icon-button cursor-pointer uk-margin-small-right" uk-icon="check" uk-tooltip="Verified Artist"></span>
       </div>
       <p><b>Member since: </b><span th:text="${#temporals.format(user.createdAt, 'MM/dd/yyyy')}"></span></p>
@@ -34,6 +35,41 @@
       <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
     </a>
   </div>
+  <h2 class="text-3xl mb-7 mt-5 border-b">Playlists</h2>
+  <div class="flex flex-wrap gap-9 playlists-list">
+
+    <a sec:authorize="isAuthenticated()"  th:each="playlist: ${user.playlists}" th:if="${!playlist.private} or ${user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}" th:href="@{${'/playlist/' + playlist.id}}" class="w-fit !no-underline hover:scale-105 duration-300 playlist">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${playlist.name}" th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h3>
+    </a>
+
+    <a sec:authorize="isAnonymous()" th:each="playlist: ${user.playlists}" th:if="${!playlist.private}" th:href="@{${'/playlist/' + playlist.id}}" class="w-fit !no-underline hover:scale-105 duration-300 playlist">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${playlist.name}" th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h3>
+    </a>
+
+  </div>
+
+  <script>
+    var playlistsShowed = document.querySelectorAll(".playlist");
+    var playlistsList = document.querySelector(".playlists-list");
+
+    if (!playlistsShowed.length) {
+      var alertElem = document.createElement("div")
+      alertElem.setAttribute("uk-alert", "")
+      alertElem.classList.add("uk-alert-primary")
+
+      var paragraphWithMessage = document.createElement("p")
+      paragraphWithMessage.innerHTML = "This user has no playlists yet."
+
+      alertElem.append(paragraphWithMessage)
+      playlistsList.append(alertElem)
+    }
+  </script>
 </div>
 
 </body>

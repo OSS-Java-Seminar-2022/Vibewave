@@ -33,13 +33,11 @@ import static com.google.common.collect.Lists.newArrayList;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final static int TEN_MEGABYTES = 10485760;
     private final static String DEFAULT_ROLE_NAME = "ROLE_BASIC";
     private final static int TOKEN_EXPIRATION_TIME_MINUTES = 15;
     private final static String USER_NOT_FOUND_MSG = "User %s not found";
     private final static String EMAIL_CONFIRMATION_SUBJECT = "VibeWave - Confirm Your E-Mail";
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    private final List<String> allowedFileTypes = newArrayList("image/jpeg", "image/png");
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -186,7 +184,7 @@ public class UserServiceImpl implements UserService {
         var size = file.getSize();
         var shouldUpdateProfilePhoto = size > 0;
 
-        if (shouldUpdateProfilePhoto && (!allowedFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (shouldUpdateProfilePhoto && (!FileService.ALLOWED_IMAGE_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("profilePhoto", "error.settings",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return false;

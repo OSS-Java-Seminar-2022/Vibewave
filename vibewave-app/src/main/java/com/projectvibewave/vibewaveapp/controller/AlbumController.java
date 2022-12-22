@@ -43,8 +43,6 @@ public class AlbumController {
                                 Model model) {
         logger.info("Accessed Album Edit Page");
 
-        var usr = (User)authentication.getPrincipal();
-
         var isSuccessful = albumService.setAlbumFormViewModel(model, (User)authentication.getPrincipal(), albumId);
 
         if (!isSuccessful) {
@@ -81,7 +79,7 @@ public class AlbumController {
                             BindingResult bindingResult,
                             Model model)
             throws UnsupportedAudioFileException, IOException {
-        logger.info("Trying to add album...");
+        logger.info("Trying to edit album...");
 
         var isSuccessful = albumService.tryEditAlbum(
                 (User)authentication.getPrincipal(), albumPostDto, bindingResult, model);
@@ -90,14 +88,15 @@ public class AlbumController {
             return "album/upload-album";
         }
 
-        return "redirect:/album/" + albumId+ "?edit";
+        return "redirect:/album/" + albumId + "?edit";
     }
 
     @GetMapping("/{albumId}")
-    public String getAlbumByIdView(Model model, @PathVariable @NotNull Long albumId) {
+    public String getAlbumByIdView(Authentication authentication, Model model, @PathVariable @NotNull Long albumId) {
         logger.info("Accessed Album View Page");
 
-        var exists = albumService.setAlbumByIdViewModel(model, albumId);
+        var exists = albumService.setAlbumByIdViewModel(
+                model, albumId, authentication != null ? (User)authentication.getPrincipal() : null);
 
         if (!exists) {
             return "redirect:/";
@@ -148,11 +147,12 @@ public class AlbumController {
     @PostMapping("{albumId}/delete")
     @PreAuthorize("isAuthenticated()")
     public String deleteAlbumById(Authentication authentication, @PathVariable @NotNull Long albumId) {
+        logger.info("trying to delete album...");
 
         var authenticatedUser = (User)authentication.getPrincipal();
-        var isSuccessfull = albumService.tryDeleteAlbum(authenticatedUser, albumId);
+        var isSuccessful = albumService.tryDeleteAlbum(authenticatedUser, albumId);
 
-        if (!isSuccessfull) {
+        if (!isSuccessful) {
             return "redirect:/";
         }
 

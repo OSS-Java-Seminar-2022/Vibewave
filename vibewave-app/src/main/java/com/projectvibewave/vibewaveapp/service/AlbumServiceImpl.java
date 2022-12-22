@@ -1,15 +1,13 @@
 package com.projectvibewave.vibewaveapp.service;
 
+import com.projectvibewave.vibewaveapp.dto.AddTrackToPlaylistDto;
 import com.projectvibewave.vibewaveapp.dto.AlbumPostDto;
 import com.projectvibewave.vibewaveapp.dto.TrackPostDto;
 import com.projectvibewave.vibewaveapp.entity.Album;
 import com.projectvibewave.vibewaveapp.entity.Track;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.enums.EAudioFileFormat;
-import com.projectvibewave.vibewaveapp.repository.AlbumFormatRepository;
-import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
-import com.projectvibewave.vibewaveapp.repository.TrackRepository;
-import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -20,21 +18,16 @@ import javax.sound.sampled.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 @AllArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
-    private final static int TEN_MEGABYTES = 10485760;
-    private final List<String> allowedImageFileTypes = newArrayList("image/jpeg", "image/png");
-    private final List<String> allowedAudioFileTypes = newArrayList("audio/mpeg", "audio/wav");
     private final AlbumRepository albumRepository;
     private final AlbumFormatRepository albumFormatRepository;
     private final UserRepository userRepository;
     private final TrackRepository trackRepository;
+    private final PlaylistRepository playlistRepository;
     private final FileService fileService;
     private final TrackService trackService;
 
@@ -86,7 +79,7 @@ public class AlbumServiceImpl implements AlbumService {
         var size = file.getSize();
         var isCoverPhotoPresent = size > 0;
 
-        if (isCoverPhotoPresent && (!allowedImageFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (isCoverPhotoPresent && (!FileService.ALLOWED_IMAGE_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("coverPhoto", "error.album",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return null;
@@ -126,7 +119,7 @@ public class AlbumServiceImpl implements AlbumService {
         var size = file.getSize();
         var isCoverPhotoPresent = size > 0;
 
-        if (isCoverPhotoPresent && (!allowedImageFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (isCoverPhotoPresent && (!FileService.ALLOWED_IMAGE_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("coverPhoto", "error.album",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return false;
@@ -154,7 +147,7 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    public boolean setAlbumByIdViewModel(Model model, Long albumId) {
+    public boolean setAlbumByIdViewModel(Model model, Long albumId, User authenticatedUser) {
         var album = albumRepository.findById(albumId).orElse(null);
 
         if (album == null) {
@@ -162,6 +155,12 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         model.addAttribute("album", album);
+        model.addAttribute("addTrackToPlaylist", new AddTrackToPlaylistDto());
+        if (authenticatedUser != null) {
+            var playlists = playlistRepository.findAllByUser(authenticatedUser);
+            model.addAttribute("playlists", playlists);
+        }
+
         return true;
     }
 
@@ -203,7 +202,7 @@ public class AlbumServiceImpl implements AlbumService {
         var contentType = file.getContentType();
         var size = file.getSize();
 
-        if (!allowedAudioFileTypes.contains(contentType) || size > TEN_MEGABYTES) {
+        if (!FileService.ALLOWED_AUDIO_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES) {
             bindingResult.rejectValue("audioSource", "error.track",
                     "Please make sure the audio is either mp3 or wav, and the size is no bigger than 10MB.");
             return false;
@@ -244,8 +243,9 @@ public class AlbumServiceImpl implements AlbumService {
         }
 
         var albumOwner = album.getUser();
+        var authenticatedUserIsOwner = Objects.equals(authenticatedUser.getId(), albumOwner.getId());
 
-        if (!Objects.equals(authenticatedUser.getId(), albumOwner.getId()) && !authenticatedUser.isAdmin()) {
+        if (!authenticatedUserIsOwner && !authenticatedUser.isAdmin()) {
             return false;
         }
 
@@ -254,6 +254,4 @@ public class AlbumServiceImpl implements AlbumService {
 
         return true;
     }
-
-
 }

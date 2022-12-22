@@ -34,37 +34,38 @@
             </div>
         </div>
     </div>
-    <div th:if="${param.success}"
-         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-         role="alert">
-        <div class="mr-3">
-            <span class="font-bold">Success!</span>
-            <span class="block sm:inline">You've successfully created an album.</span>
+    <div id="add-to-playlist" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <h2 class="uk-modal-title">Select Playlist</h2>
+            <p th:if="${#arrays.length(playlists) > 0}" class="my-5">Please select a playlist to which you want to add the track "<span id="playlist-add-track-name"></span>".</p>
+            <p th:if="${#arrays.length(playlists) == 0}" class="my-5">Unfortunately, you have no created playlist at this moment.</p>
+            <button th:if="${#arrays.length(playlists) == 0}" class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+
+            <div class="uk-text-right mt-3" th:if="${#arrays.length(playlists) > 0}">
+                <form id="add-to-playlist-form" class="inline" th:action="@{/}" th:object="${addTrackToPlaylist}" method="post">
+                    <div class="uk-margin">
+                        <div class="uk-form-controls">
+                            <div class="uk-inline block">
+                                <select id="album-format" class="uk-select" th:field="*{playlistId}">
+                                    <option th:each="playlist: ${playlists}" th:value="${playlist.id}" th:text="${playlist.name}"></option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="uk-button uk-button-danger bg-pink-500" type="submit">Add</button>
+                </form>
+            </div>
         </div>
-        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
     </div>
-    <div th:if="${param.get('added-track')}"
-         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-         role="alert">
-        <div class="mr-3">
-            <span class="font-bold">Success!</span>
-            <span class="block sm:inline">You've successfully added a track to this album.</span>
-        </div>
-        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
-    </div>
-    <div th:if="${param.get('deleted-track')}"
-         class="alert bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed bottom-2 left-2 right-2 w-fit max-w-full flex justify-between"
-         role="alert">
-        <div class="mr-3">
-            <span class="font-bold">Success!</span>
-            <span class="block sm:inline">You've successfully deleted a track from this album.</span>
-        </div>
-        <span class="flex items-center cursor-pointer shrink-0" uk-icon="close" onClick="$('.alert').fadeOut(500);"></span>
-    </div>
+    <div th:if="${param.success}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully created an album.')"></div>
+    <div th:if="${param.edit}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully updated the album')"></div>
+    <div th:if="${param.get('added-track')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully added a track to this album.')"></div>
+    <div th:if="${param.get('deleted-track')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully deleted a track from this album.')"></div>
     <div class="flex gap-10 mb-5">
         <div class="w-[250px] h-[250px] border border-neutral-300">
             <img class="w-full h-full object-cover"
-                 th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-profile.png')}}">
+                 th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
         </div>
         <div class="py-5">
             <div class="flex items-end gap-2">
@@ -133,7 +134,7 @@
                     <button href="#"><span uk-icon="icon: more"></span></button>
                     <div uk-dropdown="mode: click">
                         <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#add-to-playlist">Add to Playlist</a></li>
+                            <li><a th:trackid="${track.id}" th:trackname="${track.name}" href="#add-to-playlist" class="add-track-to-playlist-btn" uk-toggle="target: #add-to-playlist">Add to Playlist</a></li>
                             <li th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}"><a th:href="@{${'/track/' + track.id + '/edit'}}">Edit</a></li>
                             <li th:if="${album.user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}">
                                 <a th:trackid="${track.id}" th:trackname="${track.name}" href="#delete-confirmaton"
@@ -160,12 +161,11 @@
         var deleteTrackButtons = document.querySelectorAll(".delete-track-btn");
         var deleteTrackForm = document.querySelector("#delete-track-form");
         var deleteTrackName = document.querySelector("#delete-track-name");
-        var deleteConfirmationPopup = document.querySelector("#delete-confirmation");
 
-        var trackToDelete = {
-            id: 0,
-            name: "",
-        }
+        var addTrackToPlaylistButtons = document.querySelectorAll(".add-track-to-playlist-btn");
+        var addToPlaylistForm = document.querySelector("#add-to-playlist-form");
+        var playlistAddTrackName = document.querySelector("#playlist-add-track-name");
+
 
         audioPlayer.onended = function () {
             var spinningNote = document.querySelector(".currently-playing");
@@ -209,6 +209,16 @@
 
                 deleteTrackForm.setAttribute("action", "/track/" + trackId + "/delete");
                 deleteTrackName.innerHTML = trackName;
+            })
+        })
+
+        addTrackToPlaylistButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                var trackId= this.getAttribute("trackid");
+                var trackName = this.getAttribute("trackname");
+
+                addToPlaylistForm.setAttribute("action", "/playlist/add-track/" + trackId);
+                playlistAddTrackName.innerHTML = trackName;
             })
         })
 

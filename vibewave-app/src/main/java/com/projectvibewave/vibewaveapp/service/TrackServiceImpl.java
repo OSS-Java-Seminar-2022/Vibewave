@@ -25,8 +25,6 @@ import static com.google.common.collect.Lists.newArrayList;
 @Service
 @AllArgsConstructor
 public class TrackServiceImpl implements TrackService {
-    private final static int TEN_MEGABYTES = 10485760;
-    private final List<String> allowedAudioFileTypes = newArrayList("audio/mpeg", "audio/wav");
     private final TrackRepository trackRepository;
     private final UserRepository userRepository;
     private final FileService fileService;
@@ -77,7 +75,7 @@ public class TrackServiceImpl implements TrackService {
         var size = file.getSize();
         var isAudioSourcePresent = size > 0;
 
-        if (isAudioSourcePresent && (!allowedAudioFileTypes.contains(contentType) || size > TEN_MEGABYTES)) {
+        if (isAudioSourcePresent && (!FileService.ALLOWED_AUDIO_FILE_TYPES.contains(contentType) || size > FileService.TEN_MEGABYTES)) {
             bindingResult.rejectValue("audioSource", "error.track",
                     "Please make sure the image is either jpeg or png, and the size is no bigger than 10MB.");
             return null;

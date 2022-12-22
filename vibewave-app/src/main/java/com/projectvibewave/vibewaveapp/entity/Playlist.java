@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -20,9 +21,10 @@ public class Playlist {
     private Long id;
     @Column(unique = true, nullable = false)
     private String name;
+    private boolean isPrivate = false;
     private String coverPhotoUrl;
     @Builder.Default
-    private LocalDateTime uploadDate = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
     @ToString.Exclude
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(
@@ -30,5 +32,8 @@ public class Playlist {
             joinColumns = @JoinColumn(name = "playlist_id"),
             inverseJoinColumns = @JoinColumn(name = "track_id")
     )
-    private List<Track> tracks;
+    private Set<Track> tracks;
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinColumn(name="user_id")
+    private User user;
 }
