@@ -49,6 +49,21 @@ public class User implements UserDetails {
     @ToString.Exclude
     @OneToMany(mappedBy = "user")
     private List<Playlist> playlists;
+    @ToString.Exclude
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name="followings",
+            joinColumns=@JoinColumn(name="follower_user_id"),
+            inverseJoinColumns=@JoinColumn(name="following_user_id")
+    )
+    private Set<User> following;
+
+    @ToString.Exclude
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name="followings",
+            joinColumns=@JoinColumn(name="following_user_id"),
+            inverseJoinColumns=@JoinColumn(name="follower_user_id")
+    )
+    private Set<User> followers;
 
     public Long getId() {
         return id;
@@ -64,6 +79,8 @@ public class User implements UserDetails {
 
     public List<Album> getAlbums() { return albums; }
     public List<Playlist> getPlaylists() { return playlists; }
+    public Set<User> getFollowing() { return following; }
+    public Set<User> getFollowers() { return followers; }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
@@ -174,5 +191,18 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof User user)) {
+            return false;
+        }
+
+        return Objects.equals(this.getId(), user.getId());
     }
 }

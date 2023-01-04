@@ -5,7 +5,6 @@ import com.projectvibewave.vibewaveapp.dto.UserSettingsDto;
 import com.projectvibewave.vibewaveapp.enums.ConfirmationTokenStatus;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
 import com.projectvibewave.vibewaveapp.entity.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.ui.Model;
@@ -29,5 +28,7 @@ public interface UserService extends UserDetailsService {
 
     UserSettingsDto getAuthenticatedUserSettings();
 
-    boolean setUserByIdModelView(Model model, Long userId);
+    boolean setUserByIdModelView(Model model, User authenticatedUser, Long userId);
+
+    boolean tryFollowOrUnfollowUser(User authenticatedUser, Long userId);
 }

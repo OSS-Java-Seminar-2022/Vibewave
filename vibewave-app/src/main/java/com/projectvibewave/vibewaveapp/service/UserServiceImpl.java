@@ -25,7 +25,7 @@ import javax.servlet.ServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -221,7 +221,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean setUserByIdModelView(Model model, Long userId) {
+    public boolean setUserByIdModelView(Model model, User authenticatedUser, Long userId) {
         var user = userRepository.findById(userId).orElse(null);
 
         if (user == null) {
@@ -229,6 +229,40 @@ public class UserServiceImpl implements UserService {
         }
 
         model.addAttribute("user", user);
+
+        if (authenticatedUser != null) {
+            var follower = userRepository.findById(authenticatedUser.getId()).orElse(null);
+            var isFollowing = user.getFollowers().contains(follower);
+            model.addAttribute("isFollowing", isFollowing);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean tryFollowOrUnfollowUser(User authenticatedUser, Long userId) {
+        var user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        var isTryingToFollowThemselves = Objects.equals(authenticatedUser, user);
+
+        if (isTryingToFollowThemselves) {
+            return false;
+        }
+
+        var follower = userRepository.findById(authenticatedUser.getId()).orElse(null);
+
+        if (user.getFollowers().contains(follower)) {
+            user.getFollowers().remove(follower);
+        } else {
+            user.getFollowers().add(follower);
+        }
+
+        userRepository.save(user);
+
         return true;
     }
 }
