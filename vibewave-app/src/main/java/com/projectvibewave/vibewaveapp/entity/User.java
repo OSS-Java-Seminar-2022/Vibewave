@@ -173,6 +173,10 @@ public class User implements UserDetails {
         return getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
+    public boolean isPremium() {
+        return getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PREMIUM"));
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

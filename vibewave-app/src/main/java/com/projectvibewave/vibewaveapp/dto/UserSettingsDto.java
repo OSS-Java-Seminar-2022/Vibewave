@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 public class UserSettingsDto {
     private MultipartFile profilePhoto;
-    @Size(min = 3, max = 255)
+    @Size(min = 3, max = 40)
     @Pattern(regexp = "^([A-z0-9]+\\s)*[A-z0-9]+$", message = "Only letters and numbers are allowed. " +
             "Make sure you only insert one space between words.")
     private String artistName;

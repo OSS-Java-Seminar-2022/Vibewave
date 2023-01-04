@@ -50,11 +50,11 @@
       </ul>
     </div>
     <div class="uk-navbar-item w-full">
-      <form action="" class="w-full">
+      <form th:action="@{/search}" method="get" class="w-full">
         <div class="flex justify-center w-full">
-          <input class="uk-input w-full max-w-[500px]" type="text"
-                 placeholder="Search artists, albums, tracks, playlists..." aria-label="Search">
-          <button class="uk-button uk-button-default">Search</button>
+          <input class="uk-input w-full max-w-[500px]" type="text" name="keyword"
+                 placeholder="Search artists, albums, tracks, playlists..." aria-label="Search" th:value="${param.keyword}">
+          <button type="submit" class="uk-button uk-button-default">Search</button>
         </div>
       </form>
     </div>
