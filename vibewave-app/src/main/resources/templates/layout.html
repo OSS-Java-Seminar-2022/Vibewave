@@ -40,10 +40,10 @@
           <a>Discover</a>
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
-              <li><a href="#">Fresh</a></li>
-              <li><a href="#">Hot</a></li>
-              <li><a href="#">Staff Selections</a></li>
-              <li><a href="#">Followed Artists</a></li>
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/fresh')} ? 'uk-active' : ''"><a th:href="@{/fresh}">Fresh</a></li>
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/hot')} ? 'uk-active' : ''"><a th:href="@{/hot}">Hot</a></li>
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/staff-selections')} ? 'uk-active' : ''"><a th:href="@{/staff-selections}">Staff Selections</a></li>
+              <li sec:authorize="isAuthenticated()" th:class="${#httpServletRequest.requestURI.startsWith('/followed-artists')} ? 'uk-active' : ''"><a th:href="@{/followed-artists}">Followed Artists</a></li>
             </ul>
           </div>
         </li>

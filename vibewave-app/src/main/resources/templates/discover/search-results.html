@@ -10,13 +10,13 @@
 <div class="mt-10" layout:fragment="content">
   <h1 class="uk-heading-small text-center mt-3" th:text="${'Search results for &quot;' + param.keyword + '&quot;'}"></h1>
 
-  <p class="text-center text-xl text-red-500" th:if="${#arrays.length(users) == 0 && #arrays.length(albums) == 0 && #arrays.length(playlists) == 0 && #arrays.length(tracks) == 0 && #strings.length(param.keyword) >= 3}">
-    No results found. Try again.
-  </p>
+  <div class="uk-alert-danger" uk-alert th:if="${#arrays.length(users) == 0 && #arrays.length(albums) == 0 && #arrays.length(playlists) == 0 && #arrays.length(tracks) == 0 && #strings.length(param.keyword) >= 3}">
+    <p>No results found. Try again.</p>
+  </div>
 
-  <p class="text-center text-xl text-red-500" th:if="${#strings.length(param.keyword) < 3}">
-    Please enter at least 3 characters in the search bar.
-  </p>
+  <div class="uk-alert-danger" uk-alert th:if="${#strings.length(param.keyword) < 3}">
+    <p>Please enter at least 3 characters in the search bar.</p>
+  </div>
 
   <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(users) > 0}">Users</h2>
   <div class="flex flex-wrap gap-9" th:if="${#arrays.length(users) > 0}">

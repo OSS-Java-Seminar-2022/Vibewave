@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+  <title>Hot</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <h1 class="uk-heading-small text-center mt-3">Hot</h1>
+
+  <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(albums) > 0}">Albums</h2>
+  <div class="flex flex-wrap gap-9" th:if="${#arrays.length(albums) > 0}">
+    <a th:each="album: ${albums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
