@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layout}">
+<head>
+  <title th:text="${'Search results for &quot;' + param.keyword + '&quot;'}"></title>
+</head>
+<body>
+
+<div class="mt-10" layout:fragment="content">
+  <h1 class="uk-heading-small text-center mt-3" th:text="${'Search results for &quot;' + param.keyword + '&quot;'}"></h1>
+
+  <p class="text-center text-xl text-red-500" th:if="${#arrays.length(users) == 0 && #arrays.length(albums) == 0 && #arrays.length(playlists) == 0 && #arrays.length(tracks) == 0 && #strings.length(param.keyword) >= 3}">
+    No results found. Try again.
+  </p>
+
+  <p class="text-center text-xl text-red-500" th:if="${#strings.length(param.keyword) < 3}">
+    Please enter at least 3 characters in the search bar.
+  </p>
+
+  <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(users) > 0}">Users</h2>
+  <div class="flex flex-wrap gap-9" th:if="${#arrays.length(users) > 0}">
+    <a th:each="user: ${users}" th:href="@{${'/user/' + user.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (user.profilePhotoUrl != null ? user.profilePhotoUrl : 'default-profile.png')}}">
+      </div>
+      <h3 th:if="${user.artistName == null}" class="text-xl text-center" th:uk-tooltip="${user.name}" th:text="${#strings.length(user.username) > 23 ? #strings.substring(user.username, 0, 23) + '...' : user.username}"></h3>
+      <h3 th:if="${user.artistName != null}" class="text-xl text-center" th:uk-tooltip="${user.artistName}" th:text="${#strings.length(user.artistName) > 23 ? #strings.substring(user.artistName, 0, 23) + '...' : user.artistName}"></h3>
+    </a>
+  </div>
+  <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(albums) > 0}">Albums</h2>
+  <div class="flex flex-wrap gap-9" th:if="${#arrays.length(albums) > 0}">
+    <a th:each="album: ${albums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
+    </a>
+  </div>
+  <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(playlists) > 0}">Playlists</h2>
+  <div class="flex flex-wrap gap-9 playlists-list" th:if="${#arrays.length(playlists) > 0}">
+    <a th:each="playlist: ${playlists}" th:href="@{${'/playlist/' + playlist.id}}" class="w-fit !no-underline hover:scale-105 duration-300 playlist">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${playlist.name}" th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h3>
+    </a>
+  </div>
+  <h2 class="text-3xl mb-7 mt-5 border-b" th:if="${#arrays.length(tracks) > 0}">Tracks</h2>
+  <div class="flex flex-wrap gap-9" th:if="${#arrays.length(tracks) > 0}">
+    <a th:each="track: ${tracks}" th:href="@{${'/album/' + track.album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="w-[250px] h-[250px] border border-neutral-300">
+        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (track.album.coverPhotoUrl != null ? track.album.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${track.name + ' (from album ' + track.album.name + ')'}" th:text="${#strings.length(track.name) > 23 ? #strings.substring(track.name, 0, 23) + '...' : track.name}"></h3>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
