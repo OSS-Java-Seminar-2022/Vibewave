@@ -1,11 +1,13 @@
 package com.projectvibewave.vibewaveapp.controller;
 
 import com.projectvibewave.vibewaveapp.dto.UserSettingsDto;
+import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.service.UserService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -48,15 +50,33 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public String getUserProfileView(Model model, @PathVariable @NotNull Long userId) {
+    public String getUserProfileView(Authentication authentication, Model model, @PathVariable @NotNull Long userId) {
         logger.info("Accessed User Profile Page");
 
-        var exists = userService.setUserByIdModelView(model, userId);
+        var authenticatedUser = authentication != null ? (User)authentication.getPrincipal() : null;
+
+        var exists = userService.setUserByIdModelView(model, authenticatedUser, userId);
 
         if (!exists) {
             return "redirect:/";
         }
 
         return "user/profile";
+    }
+
+    @PostMapping("/follow/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public String tryFollowOrUnfollowUser(Authentication authentication, @PathVariable @NotNull Long userId) {
+        logger.info("trying to register a follow");
+
+        var authenticatedUser = (User)authentication.getPrincipal();
+
+        var isSuccessful = userService.tryFollowOrUnfollowUser(authenticatedUser, userId);
+
+        if (!isSuccessful) {
+            return "redirect:/";
+        }
+
+        return "redirect:/user/" + userId;
     }
 }
