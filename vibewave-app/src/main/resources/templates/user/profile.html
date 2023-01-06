@@ -3,20 +3,20 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layout}">
 <head>
-  <title th:text="${user.artistName != null ? user.artistName : user.username}"></title>
+  <title th:text="${!#strings.isEmpty(user.artistName) ? user.artistName : user.username}"></title>
 </head>
 <body>
 
 <div class="mt-10" layout:fragment="content">
   <div th:if="${param.get('deleted-playlist')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully deleted a playlist.')"></div>
-  <div class="flex gap-10 mb-5">
-    <div class="w-[250px] h-[250px] border border-neutral-300">
+  <div class="flex flex-col sm:flex-row gap-5 sm:gap-10 mb-5">
+    <div class="sm:w-[250px] sm:h-[250px] w-full border border-neutral-300">
       <img class="w-full h-full object-cover" th:src="@{${'/file/' + (user.profilePhotoUrl != null ? user.profilePhotoUrl : 'default-profile.png')}}">
     </div>
-    <div class="py-5 flex flex-col justify-between">
+    <div class="sm:py-5 flex flex-col justify-between">
       <div>
         <div class="flex gap-2 items-center">
-          <h2 class="text-2xl" th:classappend="|${user.isAdmin() ? 'text-red-500 font-bold' : ''} ${user.isPremium() && !user.isAdmin() ? 'text-violet-700' : ''}|" th:text="${user.artistName != null ? user.artistName : user.username}"></h2>
+          <h2 class="text-2xl" th:classappend="|${user.isAdmin() ? 'text-red-500 font-bold' : ''} ${user.isPremium() && !user.isAdmin() ? 'text-violet-700' : ''}|" th:text="${!#strings.isEmpty(user.artistName) ? user.artistName : user.username}"></h2>
           <span th:if="${user.private}" class="cursor-pointer" uk-icon="icon: info" uk-tooltip="Your account is private"></span>
           <span th:if="${user.isPremium() && !user.isAdmin()}" class="cursor-pointer" uk-icon="icon: nut" uk-tooltip="Premium User"></span>
           <span th:if="${user.isAdmin()}" class="cursor-pointer" uk-icon="icon: user" uk-tooltip="Staff Member"></span>
@@ -39,8 +39,8 @@
       <p>This user has no albums yet.</p>
     </div>
     <a th:each="album: ${user.albums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
-      <div class="w-[250px] h-[250px] border border-neutral-300">
-        <img class="w-full h-full object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
+      <div class="sm:w-[250px] sm:h-[250px] w-full aspect-square border border-neutral-300">
+        <img class="w-full h-full aspect-square object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
       </div>
       <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
     </a>
@@ -49,14 +49,14 @@
   <div class="flex flex-wrap gap-9 playlists-list">
 
     <a sec:authorize="isAuthenticated()" th:each="playlist: ${user.playlists}" th:if="${!playlist.private} or ${user.id == #authentication.principal.id} or ${#authorization.expression('hasRole(''ADMIN'')')}" th:href="@{${'/playlist/' + playlist.id}}" class="w-fit !no-underline hover:scale-105 duration-300 playlist">
-      <div class="w-[250px] h-[250px] border border-neutral-300">
+      <div class="sm:w-[250px] sm:h-[250px] w-full border border-neutral-300">
         <img class="w-full h-full object-cover" th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
       </div>
       <h3 class="text-xl text-center" th:uk-tooltip="${playlist.name}" th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h3>
     </a>
 
     <a sec:authorize="isAnonymous()" th:each="playlist: ${user.playlists}" th:if="${!playlist.private}" th:href="@{${'/playlist/' + playlist.id}}" class="w-fit !no-underline hover:scale-105 duration-300 playlist">
-      <div class="w-[250px] h-[250px] border border-neutral-300">
+      <div class="sm:w-[250px] sm:h-[250px] w-full border border-neutral-300">
         <img class="w-full h-full object-cover" th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
       </div>
       <h3 class="text-xl text-center" th:uk-tooltip="${playlist.name}" th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h3>

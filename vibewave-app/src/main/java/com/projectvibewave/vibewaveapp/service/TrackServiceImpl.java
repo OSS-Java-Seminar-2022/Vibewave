@@ -98,7 +98,7 @@ public class TrackServiceImpl implements TrackService {
             userRepository.findById(userId).ifPresent(artists::add);
         });
 
-        track.setUsers(artists);
+        track.setUsers(Set.copyOf(artists));
         track.setName(trackPostDto.getTrackName());
 
         trackRepository.save(track);

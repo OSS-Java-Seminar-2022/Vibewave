@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <title>VibeWave - Verification Request Update</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-size: 48px;
+    }
+  </style>
+</head>
+<body>
+<p>
+  Hello, <span th:text="${username}"></span>.
+</p>
+<p>
+  We are <span th:text="${status == 'APPROVED' ? 'pleased' : 'sorry'}"></span> to inform you that your verification request has been <span th:text="${status}"></span>.
+</p>
+<p>
+  Best regards,
+  VibeWave team.
+</p>
+</body>
+</html>

@@ -17,12 +17,16 @@ import org.springframework.validation.BindingResult;
 import javax.sound.sampled.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
 public class AlbumServiceImpl implements AlbumService {
+    private final static int BASIC_ROLE_ALBUM_LIMIT = 1;
     private final AlbumRepository albumRepository;
     private final AlbumFormatRepository albumFormatRepository;
     private final UserRepository userRepository;
@@ -33,6 +37,8 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public boolean setAlbumFormViewModel(Model model, User authenticatedUser, Long albumId) {
+        var hasExceededAlbumUploadLimit = false;
+
         var albumDto = new AlbumPostDto();
         Album album = null;
         if (albumId != null) {
@@ -52,6 +58,13 @@ public class AlbumServiceImpl implements AlbumService {
             model.addAttribute("isEdit", true);
         } else {
             model.addAttribute("isEdit", false);
+
+            if (!authenticatedUser.isPremium() && !authenticatedUser.isAdmin()) {
+                var albumsByUser = albumRepository.findAllByUser(authenticatedUser);
+                if (albumsByUser.size() >= BASIC_ROLE_ALBUM_LIMIT) {
+                    hasExceededAlbumUploadLimit = true;
+                }
+            }
         }
 
         var albumFormats = albumFormatRepository.findAll();
@@ -60,6 +73,7 @@ public class AlbumServiceImpl implements AlbumService {
             model.addAttribute("album", albumDto);
         }
 
+        model.addAttribute("hasExceededAlbumUploadLimit", hasExceededAlbumUploadLimit);
         return true;
     }
 
@@ -68,9 +82,23 @@ public class AlbumServiceImpl implements AlbumService {
                              AlbumPostDto albumPostDto,
                              BindingResult bindingResult,
                              Model model) {
-        setAlbumFormViewModel(model, null, null);
+        setAlbumFormViewModel(model, authenticatedUser, null);
+
+        if (!authenticatedUser.isPremium() && !authenticatedUser.isAdmin()) {
+            var albumsByUser = albumRepository.findAllByUser(authenticatedUser);
+            if (albumsByUser.size() > BASIC_ROLE_ALBUM_LIMIT) {
+                return null;
+            }
+        }
 
         if (bindingResult.hasErrors()) {
+            return null;
+        }
+
+        if (albumPostDto.getPublishDate().isAfter(
+                LocalDate.now().plusMonths(ALBUM_UPLOAD_MAX_MONTHS_BEFORE_RELEASE))) {
+            bindingResult.rejectValue("publishDate", "error.album",
+                    "Publish date can't be more than " + ALBUM_UPLOAD_MAX_MONTHS_BEFORE_RELEASE + " months from now.");
             return null;
         }
 
@@ -225,7 +253,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .name(trackPostDto.getTrackName())
                 .audioSourceUrl(filename)
                 .durationSeconds(durationSeconds != null ? durationSeconds.intValue() : 0)
-                .users(artists)
+                .users(Set.copyOf(artists))
                 .build();
 
         trackRepository.save(newTrack);

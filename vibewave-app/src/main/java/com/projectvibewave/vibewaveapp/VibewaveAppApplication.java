@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -40,6 +41,12 @@ public class VibewaveAppApplication implements CommandLineRunner {
 
     @Resource
     private PlaylistRepository playlistRepository;
+
+    @Resource
+    private StaffSelectionRepository staffSelectionRepository;
+
+    @Resource
+    private VerificationRequestRepository verificationRequestRepository;
 
     @Resource
     private FileService fileService;
@@ -167,14 +174,14 @@ public class VibewaveAppApplication implements CommandLineRunner {
                         .album(albums.get(0))
                         .audioSourceUrl("empower.mp3")
                         .durationSeconds(203)
-                        .users(users)
+                        .users(Set.copyOf(users))
                         .build(),
                 Track.builder()
                         .name("The Motto Remix")
                         .album(albums.get(0))
                         .audioSourceUrl("the-motto-remix.mp3")
                         .durationSeconds(166)
-                        .users(List.of(basicUser))
+                        .users(Set.of(basicUser))
                         .build()
         );
 
@@ -192,6 +199,32 @@ public class VibewaveAppApplication implements CommandLineRunner {
         );
 
         playlistRepository.saveAll(playlists);
+
+        var staffSelections = newArrayList(
+                StaffSelection.builder()
+                        .selectedPlaylist(playlists.get(0))
+                        .build()
+        );
+
+        staffSelectionRepository.saveAll(staffSelections);
+
+        var message = """
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the 
+                industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and 
+                scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap 
+                into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the
+                 release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing
+                  software like Aldus PageMaker including versions of Lorem Ipsum.
+                """;
+
+        var verificationsRequests = newArrayList(
+                VerificationRequest.builder()
+                        .user(premiumUser)
+                        .message(message)
+                        .build()
+        );
+
+        verificationRequestRepository.saveAll(verificationsRequests);
 
         logger.info("database populated!");
     }

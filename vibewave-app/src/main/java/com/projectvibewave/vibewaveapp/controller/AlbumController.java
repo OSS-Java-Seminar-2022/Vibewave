@@ -28,10 +28,11 @@ public class AlbumController {
 
     @GetMapping("/add")
     @PreAuthorize("isAuthenticated()")
-    public String albumAddView(Model model) {
+    public String albumAddView(Authentication authentication, Model model) {
         logger.info("Accessed Album Add Page");
 
-        albumService.setAlbumFormViewModel(model, null, null);
+        var authenticatedUser = (User)authentication.getPrincipal();
+        albumService.setAlbumFormViewModel(model, authenticatedUser, null);
 
         return "album/upload-album";
     }

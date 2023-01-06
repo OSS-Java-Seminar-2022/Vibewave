@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin-layout}">
+<head>
+    <title>Users</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div id="delete-confirmation" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <h2 class="uk-modal-title">Confirmation</h2>
+            <p class="my-5">Are you sure you want to delete the user "<span id="delete-user-username"></span>"?</p>
+            <div class="uk-text-right mt-3">
+                <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+                <form id="delete-user-form" class="inline" th:action="@{/}" method="post">
+                    <button class="uk-button uk-button-danger bg-pink-500" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h1 class="uk-heading-small text-center mt-3">Users</h1>
+    <hr class="uk-divider-icon"/>
+
+    <div>
+        <div class="uk-overflow-auto">
+            <table class="uk-table uk-table-small uk-table-divider">
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>E-Mail</th>
+                    <th>Username</th>
+                    <th>Artist Name</th>
+                    <th>Created At</th>
+                    <th>Private</th>
+                    <th>Confirmed</th>
+                    <th>Premium</th>
+                    <th>Verified</th>
+                    <th>Admin</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user: ${users}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.username}"></td>
+                    <td>
+                        <span th:if="${#strings.isEmpty(user.artistName)}" th:uk-icon="close"></span>
+                        <span th:if="${!#strings.isEmpty(user.artistName)}" th:text="${user.artistName}"></span>
+                    </td>
+                    <td th:text="${user.createdAt}"></td>
+                    <td>
+                        <span th:uk-icon="${user.private} ? 'check' : 'close'"></span>
+                    </td>
+                    <td>
+                        <span th:uk-icon="${user.enabled} ? 'check' : 'close'"></span>
+                    </td>
+                    <td>
+                        <span th:uk-icon="${user.isPremium()} ? 'check' : 'close'"></span>
+                    </td>
+                    <td>
+                        <span th:uk-icon="${user.verified} ? 'check' : 'close'"></span>
+                    </td>
+                    <td>
+                        <span th:uk-icon="${user.isAdmin()} ? 'check' : 'close'"></span>
+                    </td>
+                    <td th:if="${#authentication.principal.id != user.id}">
+                        <button href="#"><span uk-icon="icon: more"></span></button>
+                        <div uk-dropdown="mode: click">
+                            <ul class="uk-nav uk-dropdown-nav">
+                                <li><a th:href="@{${'/admin/user/' + user.id + '/edit'}}">Edit</a></li>
+                                <li>
+                                    <a th:userid="${user.id}" th:username="${user.username}" href="#delete-confirmaton"
+                                       class="delete-user-btn !text-red-500" uk-toggle="target: #delete-confirmation">Delete</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <form action="" method="get">
+            <label for="pages">Select a page:</label>
+            <select name="page" id="pages" th:with="pageParam=${!#strings.isEmpty(param.page) ? param.page : '1'}" onchange="this.form.submit()">
+                <option th:each="i: ${#numbers.sequence(1, users.totalPages)}" th:value="${i}" th:text="${i}" th:selected="${#strings.equals(pageParam, i)}"></option>
+            </select>
+        </form>
+    </div>
+
+    <script>
+        var deleteUserButtons = document.querySelectorAll(".delete-user-btn");
+        var deleteUserForm = document.querySelector("#delete-user-form");
+        var deleteUserName = document.querySelector("#delete-user-username");
+
+        deleteUserButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                var userId= this.getAttribute("userid");
+                var username = this.getAttribute("username");
+
+                deleteUserForm.setAttribute("action", "/admin/user/" + userId + "/delete");
+                deleteUserName.innerHTML = username;
+            })
+        })
+
+    </script>
+
+</div>
+
+</body>
+</html>

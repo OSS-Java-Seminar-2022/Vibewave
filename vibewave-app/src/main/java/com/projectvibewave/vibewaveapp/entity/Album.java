@@ -1,5 +1,6 @@
 package com.projectvibewave.vibewaveapp.entity;
 
+import com.projectvibewave.vibewaveapp.service.AlbumService;
 import lombok.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -35,4 +36,8 @@ public class Album {
     @ToString.Exclude
     @OneToMany(mappedBy = "album")
     private List<Track> tracks;
+
+    public boolean isReleased() {
+        return !getPublishDate().isAfter(LocalDate.now());
+    }
 }

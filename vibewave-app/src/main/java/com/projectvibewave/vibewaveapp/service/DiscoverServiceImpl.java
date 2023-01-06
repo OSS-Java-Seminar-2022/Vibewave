@@ -73,7 +73,7 @@ public class DiscoverServiceImpl implements DiscoverService {
     @Override
     public void setFollowedArtistContentModel(Long userId, Model model) {
         var freshAlbumsByFollowedArtists =
-                albumRepository.findWhereArtistIsVerifiedAndUserIsFollowerOrderByPublishDateDesc(userId);
+                albumRepository.findWhereUserIsFollowerOrderByPublishDateDesc(userId);
 
         var freshAlbumsByFollowedArtistsLimited = freshAlbumsByFollowedArtists.stream().limit(10).toList();
 
