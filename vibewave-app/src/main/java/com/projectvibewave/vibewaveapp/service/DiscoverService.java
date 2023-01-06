@@ -11,4 +11,6 @@ public interface DiscoverService {
     void setHotContentModel(Model model);
 
     void setFollowedArtistContentModel(Long userId, Model model);
+
+    void setStaffSelectionsContentModel(Model model);
 }

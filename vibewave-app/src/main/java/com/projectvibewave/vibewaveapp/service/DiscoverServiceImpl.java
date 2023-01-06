@@ -1,11 +1,9 @@
 package com.projectvibewave.vibewaveapp.service;
 
 import com.projectvibewave.vibewaveapp.entity.Album;
+import com.projectvibewave.vibewaveapp.entity.StaffSelection;
 import com.projectvibewave.vibewaveapp.entity.User;
-import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
-import com.projectvibewave.vibewaveapp.repository.PlaylistRepository;
-import com.projectvibewave.vibewaveapp.repository.TrackRepository;
-import com.projectvibewave.vibewaveapp.repository.UserRepository;
+import com.projectvibewave.vibewaveapp.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -23,10 +21,11 @@ public class DiscoverServiceImpl implements DiscoverService {
     private final AlbumRepository albumRepository;
     private final PlaylistRepository playlistRepository;
     private final TrackRepository trackRepository;
+    private final StaffSelectionRepository staffSelectionRepository;
 
     @Override
     public void setSearchModel(User authenticatedUser, Model model, String keyword) {
-        if (keyword.length() < 3) {
+        if (keyword.length() < 1) {
             model.addAttribute("users", new ArrayList<>());
             model.addAttribute("albums", new ArrayList<>());
             model.addAttribute("playlists", new ArrayList<>());
@@ -85,5 +84,14 @@ public class DiscoverServiceImpl implements DiscoverService {
                                 album.getUser().getUsername()));
 
         model.addAttribute("artistAlbums", freshAlbumsByFollowedArtistsGrouped);
+    }
+
+    @Override
+    public void setStaffSelectionsContentModel(Model model) {
+        var staffSelectedPlaylist = staffSelectionRepository.findAll();
+
+        var playlists = staffSelectedPlaylist.stream().map(StaffSelection::getSelectedPlaylist).toList();
+
+        model.addAttribute("playlists", playlists);
     }
 }

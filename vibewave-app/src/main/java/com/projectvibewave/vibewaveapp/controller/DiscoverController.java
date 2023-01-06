@@ -50,6 +50,15 @@ public class DiscoverController {
         return "discover/hot";
     }
 
+    @GetMapping("/staff-selections")
+    public String getStaffSelectionsContent(Model model) {
+        logger.info("Accessed Staff Selections Page");
+
+        discoverService.setStaffSelectionsContentModel(model);
+
+        return "discover/staff-selections";
+    }
+
     @GetMapping("/followed-artists")
     @PreAuthorize("isAuthenticated()")
     public String getHotContent(Authentication authentication, Model model) {
