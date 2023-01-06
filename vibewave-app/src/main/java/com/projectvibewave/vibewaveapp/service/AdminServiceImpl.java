@@ -4,6 +4,7 @@ import com.projectvibewave.vibewaveapp.dto.AdminEditUserDto;
 import com.projectvibewave.vibewaveapp.dto.StaffSelectionsDto;
 import com.projectvibewave.vibewaveapp.entity.Album;
 import com.projectvibewave.vibewaveapp.entity.StaffSelection;
+import com.projectvibewave.vibewaveapp.entity.Track;
 import com.projectvibewave.vibewaveapp.entity.VerificationRequest;
 import com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus;
 import com.projectvibewave.vibewaveapp.repository.*;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -164,6 +166,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public boolean tryDeleteUser(Long userId) {
         var user = userRepository.findById(userId).orElse(null);
 
@@ -172,12 +175,26 @@ public class AdminServiceImpl implements AdminService {
         }
 
         var albumsByUser = albumRepository.findAllByUser(user);
-        albumRepository.deleteAllInBatch(albumsByUser);
+        albumsByUser.forEach(album -> {
+            trackRepository.deleteAllByAlbum(album);
+            albumRepository.delete(album);
+        });
         var playlistsByUser = playlistRepository.findAllByUser(user);
-        playlistRepository.deleteAllInBatch(playlistsByUser);
+        playlistsByUser.forEach(playlist -> {
+            staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
+
+            playlistRepository.delete(playlist);
+        });
         var tracksByUser = trackRepository.findAllByUser(user.getId());
         tracksByUser.forEach(track -> {
             track.getUsers().remove(user);
+            var playlistsIncludingTrack = playlistRepository.findAllByTrack(track.getId());
+            playlistsIncludingTrack.forEach(playlist -> {
+                staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
+
+                playlistRepository.delete(playlist);
+            });
+            trackRepository.save(track);
         });
         var verificationRequests = verificationRequestRepository.findAllByUser(user);
         verificationRequestRepository.deleteAllInBatch(verificationRequests);
