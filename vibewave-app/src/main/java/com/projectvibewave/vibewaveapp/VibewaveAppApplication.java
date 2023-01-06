@@ -106,6 +106,7 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .password(passwordEncoder.encode("basic"))
                 .isEnabled(true)
                 .artistName("DJ Basic")
+                .isVerified(true)
                 .roles(Sets.newHashSet(basicRole))
                 .build();
 
@@ -127,7 +128,7 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .roles(Sets.newHashSet(basicRole, premiumRole))
                 .build();
 
-        var users = List.of(adminUser, basicUser, premiumUser);
+        var users = List.of(adminUser, premiumUser, basicUser);
         userRepository.saveAll(users);
 
         var albumFormats = newArrayList(

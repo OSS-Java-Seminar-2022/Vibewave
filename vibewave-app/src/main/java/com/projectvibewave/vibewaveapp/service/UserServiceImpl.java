@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
         var templateModel = new HashMap<String, Object>();
         var port = servletRequest.getServerPort();
         var hostName = servletRequest.getServerName();
-        var confirmationLink = "http://" + hostName + ":" + port + "/user/confirm?token=" + token;
+        var confirmationLink = "http://" + hostName + ":" + port + "/auth/confirm?token=" + token;
         templateModel.put("confirmationLink", confirmationLink);
         templateModel.put("username", user.getUsername());
 
