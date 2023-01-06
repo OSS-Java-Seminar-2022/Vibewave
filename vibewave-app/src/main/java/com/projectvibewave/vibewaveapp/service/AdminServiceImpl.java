@@ -182,7 +182,6 @@ public class AdminServiceImpl implements AdminService {
         var playlistsByUser = playlistRepository.findAllByUser(user);
         playlistsByUser.forEach(playlist -> {
             staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
-
             playlistRepository.delete(playlist);
         });
         var tracksByUser = trackRepository.findAllByUser(user.getId());
@@ -191,7 +190,6 @@ public class AdminServiceImpl implements AdminService {
             var playlistsIncludingTrack = playlistRepository.findAllByTrack(track.getId());
             playlistsIncludingTrack.forEach(playlist -> {
                 staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
-
                 playlistRepository.delete(playlist);
             });
             trackRepository.save(track);
