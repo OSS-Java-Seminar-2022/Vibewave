@@ -10,4 +10,6 @@ public interface VerificationService {
     boolean setVerificationRequestModel(User authenticatedUser, Model model);
 
     boolean trySendVerificationRequest(User authenticatedUser, VerificationRequestPostDto verificationRequestPostDto, BindingResult bindingResult, Model model);
+
+    boolean hasUserMetRequiredConditions(User authenticatedUser);
 }

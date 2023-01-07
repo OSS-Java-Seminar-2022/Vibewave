@@ -55,7 +55,7 @@
                                             <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
                                                 Message</a>
                                         </td>
-                                        <td th:text="${dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
                                         <td th:text="${req.status}"></td>
                                         <td th:if="${req.status == PENDING}" class="flex gap-2">
                                             <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"
@@ -100,7 +100,7 @@
                                             <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
                                                 Message</a>
                                         </td>
-                                        <td th:text="${dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
                                         <td th:text="${req.status}"></td>
                                         <td th:if="${req.status == PENDING}" class="flex gap-2">
                                             <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"
@@ -145,7 +145,7 @@
                                             <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
                                                 Message</a>
                                         </td>
-                                        <td th:text="${dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
                                         <td th:text="${req.status}"></td>
                                         <td th:if="${req.status == PENDING}" class="flex gap-2">
                                             <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Verification Request</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div id="modal-center" class="uk-flex-top" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+    <h1 class="uk-heading-small text-center mt-3">Verification Request</h1>
+    <hr class="uk-divider-icon"/>
+
+    <div class="uk-container uk-container-xsmall">
+        <ul class="mb-5" uk-accordion>
+            <li th:classappend="${isRequestCurrentlyPending} ? 'uk-open' : ''">
+                <a class="uk-accordion-title" href="#">Sent Requests</a>
+                <div class="uk-accordion-content">
+                    <div class="uk-alert-primary" th:if="${#arrays.length(sentRequests) == 0}" uk-alert>
+                        <p>You have no previously sent verification requests.</p>
+                    </div>
+                    <table class="uk-table uk-table-small uk-table-divider"
+                           th:if="${#arrays.length(sentRequests) > 0}">
+                        <thead>
+                        <tr>
+                            <th>Date Applied</th>
+                            <th>Message</th>
+                            <th>Date Resolved</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:with="APPROVED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).APPROVED},REJECTED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).REJECTED}"
+                            th:each="req: ${sentRequests}"
+                            th:classappend="${req.status == APPROVED} ? 'bg-green-100' : (${req.status == REJECTED ? 'bg-red-100' : 'bg-orange-100'})">
+                            <td th:text="${#temporals.format(req.dateApplied, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:onclick="changeDisplayMessage([[${req.message}]])">
+                                <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
+                                    Message</a>
+                            </td>
+                            <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                            <td th:text="${req.status}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
+        </ul>
+
+        <div class="uk-alert-success" th:if="${#authentication.principal.verified}" uk-alert>
+            <div>
+                <p>You are a verified artist. Congrats!</p>
+            </div>
+        </div>
+
+        <div th:if="${!#authentication.principal.verified}">
+            <div class="uk-alert-danger" th:if="${!hasUserMetRequiredConditions}" uk-alert>
+                <div>
+                    <p>You haven't met our required conditions to apply for a verification:</p>
+                    <ul class="uk-list uk-list-hyphen">
+                        <li>5 Total Plays</li>
+                    </ul>
+                </div>
+            </div>
+            <div th:if="${hasUserMetRequiredConditions}">
+                <div class="uk-alert-primary" th:if="${isRequestCurrentlyPending}" uk-alert>
+                    <p>Please wait until we resolve your currently pending request before sending another one.</p>
+                </div>
+
+                <form th:if="${!#authentication.principal.verified && !isRequestCurrentlyPending}" action="#"
+                      th:action="@{/verification/request}" th:object="${verificationRequest}" method="POST"
+                      enctype="multipart/form-data"
+                      class="uk-form-horizontal uk-margin-large">
+                    <div class="uk-margin">
+                        <label class="uk-form-label" for="message">Message:</label>
+                        <div class="uk-form-controls">
+                            <div class="uk-inline block">
+                            <textarea id="message" class="uk-textarea"
+                                      th:classappend="${#fields.hasErrors('message')} ? 'uk-form-danger' : ''"
+                                      th:field="*{message}" rows="5" placeholder="Why should we verify your account?"
+                                      aria-label="Textarea"></textarea>
+                            </div>
+                            <ul class="text-red-500">
+                                <li th:each="err : ${#fields.errors('message')}" th:text="${err}"/>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button class="uk-button uk-button-primary bg-blue-500" type="submit"
+                            onclick="this.form.submit(); this.disabled=true;">Save
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeDisplayMessage(message) {
+            var messageParagraph = document.querySelector("#modal-message");
+
+            messageParagraph.innerHTML = message;
+        }
+    </script>
+</div>
+
+</body>
+</html>

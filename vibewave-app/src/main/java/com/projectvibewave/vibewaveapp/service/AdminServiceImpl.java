@@ -179,25 +179,18 @@ public class AdminServiceImpl implements AdminService {
             trackRepository.deleteAllByAlbum(album);
             albumRepository.delete(album);
         });
+        var staffSelectionsByUser = staffSelectionRepository.findAllBySelectedPlaylist_User(user);
+        staffSelectionRepository.deleteAll(staffSelectionsByUser);
         var playlistsByUser = playlistRepository.findAllByUser(user);
-        playlistsByUser.forEach(playlist -> {
-            staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
-            playlistRepository.delete(playlist);
-        });
+        playlistRepository.deleteAll(playlistsByUser);
         var tracksByUser = trackRepository.findAllByUser(user.getId());
         tracksByUser.forEach(track -> {
             track.getUsers().remove(user);
-            var playlistsIncludingTrack = playlistRepository.findAllByTrack(track.getId());
-            playlistsIncludingTrack.forEach(playlist -> {
-                staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
-                playlistRepository.delete(playlist);
-            });
             trackRepository.save(track);
         });
         var verificationRequests = verificationRequestRepository.findAllByUser(user);
         verificationRequestRepository.deleteAllInBatch(verificationRequests);
-        var staffSelectionsByUser = staffSelectionRepository.findAllBySelectedPlaylist_User(user);
-        staffSelectionRepository.deleteAllInBatch(staffSelectionsByUser);
+
         userRepository.delete(user);
         return true;
     }

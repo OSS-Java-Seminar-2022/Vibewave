@@ -1,6 +1,5 @@
 package com.projectvibewave.vibewaveapp.controller;
 
-import com.projectvibewave.vibewaveapp.dto.AdminEditUserDto;
 import com.projectvibewave.vibewaveapp.dto.VerificationRequestPostDto;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.service.VerificationService;
@@ -15,7 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Controller
 @AllArgsConstructor
@@ -32,11 +30,11 @@ public class VerificationController {
         var authenticatedUser = (User) authentication.getPrincipal();
         verificationService.setVerificationRequestModel(authenticatedUser, model);
 
-        return "verification/request";
+        return "user/verification-request";
     }
 
     @PostMapping("/request")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and !#authentication.principal.verified")
     public String trySendVerificationRequest(Authentication authentication,
                                             @Valid @ModelAttribute("verificationRequest") VerificationRequestPostDto verificationRequestPostDto,
                                             BindingResult bindingResult,
@@ -44,10 +42,15 @@ public class VerificationController {
         logger.info("Accessed Verification Request Page");
 
         var authenticatedUser = (User) authentication.getPrincipal();
+
+        if (!verificationService.hasUserMetRequiredConditions(authenticatedUser)) {
+            return "redirect:/verification/request";
+        }
+
         var isSuccessful = verificationService.trySendVerificationRequest(authenticatedUser, verificationRequestPostDto, bindingResult, model);
 
         if (!isSuccessful) {
-            return "verification/request";
+            return "user/verification-request";
         }
 
         return "redirect:/verification/request";
