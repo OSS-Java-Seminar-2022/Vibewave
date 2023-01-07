@@ -38,12 +38,12 @@
   <div th:if="${param.edit}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully updated the playlist.')"></div>
   <div th:if="${param.get('added-track')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully added a track to this playlist.')"></div>
   <div th:if="${param.get('removed-track')}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully removed a track from this playlist.')"></div>
-  <div class="flex gap-10 mb-5">
-    <div class="w-[250px] h-[250px] border border-neutral-300">
-      <img class="w-full h-full object-cover"
+  <div class="flex flex-col sm:flex-row gap-5 sm:gap-10 mb-5">
+    <div class="sm:w-[250px] sm:h-[250px] aspect-square w-full border border-neutral-300">
+      <img class="w-full h-full aspect-square object-cover"
            th:src="@{${'/file/' + (playlist.coverPhotoUrl != null ? playlist.coverPhotoUrl : 'default-album.png')}}">
     </div>
-    <div class="py-5">
+    <div class="sm:py-5">
       <div class="flex items-end gap-2">
         <h2 class="text-2xl"
             th:text="${#strings.length(playlist.name) > 23 ? #strings.substring(playlist.name, 0, 23) + '...' : playlist.name}"></h2>
@@ -51,7 +51,7 @@
         <span>by</span>
         <a class="uk-link-heading" th:href="@{${'/user/' + playlist.user.id}}">
           <h3 class="text-lg hover:opacity-70 duration-300"
-              th:text="${playlist.user.artistName != null ? playlist.user.artistName : playlist.user.username}"></h3>
+              th:text="${!#strings.isEmpty(playlist.user.artistName) ? playlist.user.artistName : playlist.user.username}"></h3>
         </a>
       </div>
       <p><b>Tracks: </b><span
@@ -71,7 +71,8 @@
     <div class="uk-alert-primary" uk-alert th:if="${#arrays.length(playlist.tracks) == 0}">
       <p>This playlist has no tracks yet.</p>
     </div>
-    <table th:if="${#arrays.length(playlist.tracks) > 0}" class="uk-table">
+    <div class="uk-overflow-auto w-full">
+      <table th:if="${#arrays.length(playlist.tracks) > 0}" class="uk-table">
       <thead>
       <tr>
         <th>#</th>
@@ -117,6 +118,7 @@
       </tr>
       </tbody>
     </table>
+    </div>
   </div>
   <audio id="audio-player" controls hidden>
     <source src="" type="audio/mpeg">

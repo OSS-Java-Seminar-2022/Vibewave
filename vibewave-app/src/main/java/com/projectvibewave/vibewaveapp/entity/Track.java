@@ -34,5 +34,5 @@ public class Track {
             joinColumns = @JoinColumn(name = "track_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> users;
+    private Set<User> users;
 }

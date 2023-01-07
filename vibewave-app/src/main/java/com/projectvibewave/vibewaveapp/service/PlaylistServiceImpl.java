@@ -4,6 +4,7 @@ import com.projectvibewave.vibewaveapp.dto.PlaylistPostDto;
 import com.projectvibewave.vibewaveapp.entity.Playlist;
 import com.projectvibewave.vibewaveapp.entity.User;
 import com.projectvibewave.vibewaveapp.repository.PlaylistRepository;
+import com.projectvibewave.vibewaveapp.repository.StaffSelectionRepository;
 import com.projectvibewave.vibewaveapp.repository.TrackRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Objects;
 public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepository playlistRepository;
     private final TrackRepository trackRepository;
+    private final StaffSelectionRepository staffSelectionRepository;
     private final FileService fileService;
 
     @Override
@@ -122,6 +124,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             return false;
         }
 
+        staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
         playlistRepository.delete(playlist);
 
         return true;

@@ -3,6 +3,8 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!--Tailwind CSS -->
   <script src="/tailwindcss.3.2.1.js"></script>
   <!-- UIkit CSS -->
@@ -17,6 +19,65 @@
   <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">VibeWave</title>
 </head>
 <body>
+<div id="offcanvas-nav" uk-offcanvas="mode: slide, overlay: true">
+  <div class="uk-offcanvas-bar">
+
+    <ul class="uk-nav uk-nav-default">
+      <li th:class="${#httpServletRequest.requestURI == '/'} ? 'uk-active' : ''"><a th:href="@{/}">Home</a></li>
+      <li th:class="${#httpServletRequest.requestURI.startsWith('/fresh')} ? 'uk-active' : ''"><a th:href="@{/fresh}">Fresh</a></li>
+      <li th:class="${#httpServletRequest.requestURI.startsWith('/hot')} ? 'uk-active' : ''"><a th:href="@{/hot}">Hot</a></li>
+      <li th:class="${#httpServletRequest.requestURI.startsWith('/staff-selections')} ? 'uk-active' : ''"><a th:href="@{/staff-selections}">Staff Selections</a></li>
+      <li sec:authorize="isAuthenticated()" th:class="${#httpServletRequest.requestURI.startsWith('/followed-artists')} ? 'uk-active' : ''"><a th:href="@{/followed-artists}">Followed Artists</a></li>
+      <li class="uk-nav-divider"></li>
+      <form th:action="@{/search}" method="get" class="w-full mt-3 mb-3">
+        <div class="">
+          <input class="uk-input w-full mb-2" type="text" name="keyword"
+                 placeholder="Search artists, albums, tracks, playlists..." aria-label="Search" th:value="${param.keyword}">
+          <button type="submit" class="uk-button uk-button-default w-full">Search</button>
+        </div>
+      </form>
+      <li class="uk-nav-divider"></li>
+      <li sec:authorize="isAuthenticated()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/user/' + #authentication.principal.id)} ? 'uk-active' : ''">
+        <a th:href="@{'/user/' + ${#authentication.principal.id}}">My Profile</a>
+      </li>
+      <li sec:authorize="isAuthenticated()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/album/add')} ? 'uk-active' : ''">
+        <a th:href="@{/album/add}">Upload Album</a>
+      </li>
+      <li sec:authorize="isAuthenticated()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/playlist/add')} ? 'uk-active' : ''">
+        <a th:href="@{/playlist/add}">New Playlist</a>
+      </li>
+      <li sec:authorize="isAuthenticated()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/user/settings')} ? 'uk-active' : ''">
+        <a th:href="@{/user/settings}">Settings</a>
+      </li>
+      <li sec:authorize="isAuthenticated()">
+        <a href="#logout-confirmation" uk-toggle="target: #logout-confirmation">Log Out</a>
+      </li>
+      <li sec:authorize="isAuthenticated()" class="uk-nav-divider"></li>
+      <li sec:authorize="isAuthenticated()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/verification/request')} ? 'uk-active' : ''">
+        <a th:href="@{/verification/request}">Verification Request</a>
+      </li>
+      <li sec:authorize="hasAnyRole('ROLE_ADMIN')" class="uk-nav-divider"></li>
+      <li sec:authorize="hasAnyRole('ROLE_ADMIN')"
+          th:class="${#httpServletRequest.requestURI.startsWith('/admin')} ? 'uk-active' : ''">
+        <a th:href="@{/admin}">Admin</a>
+      </li>
+      <li sec:authorize="isAnonymous()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/auth/login')} ? 'uk-active' : ''">
+        <a th:href="@{/auth/login}">Log In</a>
+      </li>
+      <li sec:authorize="isAnonymous()"
+          th:class="${#httpServletRequest.requestURI.startsWith('/auth/signup')} ? 'uk-active' : ''">
+        <a th:href="@{/auth/signup}">Sign Up</a>
+      </li>
+    </ul>
+
+  </div>
+</div>
 <div id="logout-confirmation" uk-modal>
   <div class="uk-modal-dialog uk-modal-body">
     <button class="uk-modal-close-default" type="button" uk-close></button>
@@ -32,7 +93,8 @@
 <header>
   <nav class="uk-navbar-container justify-between px-5 gap-5" uk-navbar>
     <div class="uk-navbar-left">
-      <ul class="uk-navbar-nav">
+      <button class="sm:hidden py-3" type="button" uk-toggle="target: #offcanvas-nav"><span uk-icon="icon: menu; ratio: 2"></span></button>
+      <ul class="hidden sm:flex uk-navbar-nav">
         <li th:class="${#httpServletRequest.requestURI == '/'} ? 'uk-active' : ''">
           <a th:href="@{/}">Home</a>
         </li>
@@ -49,7 +111,7 @@
         </li>
       </ul>
     </div>
-    <div class="uk-navbar-item w-full">
+    <div class="hidden sm:flex uk-navbar-item w-full">
       <form th:action="@{/search}" method="get" class="w-full">
         <div class="flex justify-center w-full">
           <input class="uk-input w-full max-w-[500px]" type="text" name="keyword"
@@ -58,7 +120,7 @@
         </div>
       </form>
     </div>
-    <div class="uk-navbar-right">
+    <div class="hidden sm:flex uk-navbar-right">
       <ul class="uk-navbar-nav">
         <li>
           <a href="#"><span
@@ -85,10 +147,15 @@
               <li sec:authorize="isAuthenticated()">
                 <a href="#logout-confirmation" uk-toggle="target: #logout-confirmation">Log Out</a>
               </li>
+              <li sec:authorize="isAuthenticated()" class="uk-nav-divider"></li>
+              <li sec:authorize="isAuthenticated()"
+                  th:class="${#httpServletRequest.requestURI.startsWith('/verification/request')} ? 'uk-active' : ''">
+                <a th:href="@{/verification/request}">Verification Request</a>
+              </li>
               <li sec:authorize="hasAnyRole('ROLE_ADMIN')" class="uk-nav-divider"></li>
               <li sec:authorize="hasAnyRole('ROLE_ADMIN')"
-                  th:class="${#httpServletRequest.requestURI.startsWith('/auth/admin')} ? 'uk-active' : ''">
-                <a href="#">Admin</a>
+                  th:class="${#httpServletRequest.requestURI.startsWith('/admin')} ? 'uk-active' : ''">
+                <a th:href="@{/admin}">Admin</a>
               </li>
               <li sec:authorize="isAnonymous()"
                   th:class="${#httpServletRequest.requestURI.startsWith('/auth/login')} ? 'uk-active' : ''">

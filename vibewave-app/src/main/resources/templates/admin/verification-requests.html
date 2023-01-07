@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin-layout}">
+<head>
+    <title>Verification Requests</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div id="modal-center" class="uk-flex-top" uk-modal>
+        <div class="uk-modal-dialog uk-modal-body uk-margin-auto-vertical">
+            <button class="uk-modal-close-default" type="button" uk-close></button>
+            <p id="modal-message"></p>
+        </div>
+    </div>
+    <h1 class="uk-heading-small text-center mt-3">Verification Requests</h1>
+    <hr class="uk-divider-icon"/>
+
+    <div class="uk-child-width-1-1@s" uk-grid>
+        <div>
+            <div uk-grid>
+                <div class="uk-width-auto@m">
+                    <ul class="uk-tab-left" uk-tab="connect: #component-tab-left; animation: uk-animation-fade">
+                        <li><a href="#">Pending</a></li>
+                        <li><a href="#">Approved</a></li>
+                        <li><a href="#">Rejected</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-expand@m">
+                    <ul id="component-tab-left" class="uk-switcher">
+                        <li>
+                            <div class="uk-alert-primary"
+                                 th:if="${#arrays.length(verificationRequests.get('PENDING')) == 0}" uk-alert>
+                                <p>No pending verification requests found.</p>
+                            </div>
+                            <div class="uk-overflow-auto">
+                                <table class="uk-table uk-table-small uk-table-divider"
+                                       th:if="${#arrays.length(verificationRequests.get('PENDING')) > 0}">
+                                    <thead>
+                                    <tr>
+                                        <th>Date Applied</th>
+                                        <th>Message</th>
+                                        <th>Date Resolved</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:with="APPROVED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).APPROVED},REJECTED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).REJECTED},PENDING=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).PENDING}"
+                                        th:each="req: ${verificationRequests.get('PENDING')}"
+                                        th:classappend="${req.status == APPROVED} ? 'bg-green-100' : (${req.status == REJECTED ? 'bg-red-100' : 'bg-orange-100'})">
+                                        <td th:text="${#temporals.format(req.dateApplied, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td th:onclick="changeDisplayMessage([[${req.message}]])">
+                                            <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
+                                                Message</a>
+                                        </td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.status}"></td>
+                                        <td th:if="${req.status == PENDING}" class="flex gap-2">
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Approve request"
+                                                                            uk-icon="check"></span></button>
+                                            </form>
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/reject'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Reject request"
+                                                                            uk-icon="close"></span></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                        </li>
+                        <li>
+                            <div class="uk-alert-primary"
+                                 th:if="${#arrays.length(verificationRequests.get('APPROVED')) == 0}" uk-alert>
+                                <p>No approved verification requests found.</p>
+                            </div>
+                            <div class="uk-overflow-auto">
+                                <table class="uk-table uk-table-small uk-table-divider"
+                                       th:if="${#arrays.length(verificationRequests.get('APPROVED')) > 0}">
+                                    <thead>
+                                    <tr>
+                                        <th>Date Applied</th>
+                                        <th>Message</th>
+                                        <th>Date Resolved</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:with="APPROVED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).APPROVED},REJECTED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).REJECTED},PENDING=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).PENDING}"
+                                        th:each="req: ${verificationRequests.get('APPROVED')}"
+                                        th:classappend="${req.status == APPROVED} ? 'bg-green-100' : (${req.status == REJECTED ? 'bg-red-100' : 'bg-orange-100'})">
+                                        <td th:text="${#temporals.format(req.dateApplied, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td th:onclick="changeDisplayMessage([[${req.message}]])">
+                                            <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
+                                                Message</a>
+                                        </td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.status}"></td>
+                                        <td th:if="${req.status == PENDING}" class="flex gap-2">
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Approve request"
+                                                                            uk-icon="check"></span></button>
+                                            </form>
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/reject'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Reject request"
+                                                                            uk-icon="close"></span></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="uk-alert-primary"
+                                 th:if="${#arrays.length(verificationRequests.get('REJECTED')) == 0}" uk-alert>
+                                <p>No rejected verification requests found.</p>
+                            </div>
+                            <div class="uk-overflow-auto">
+                                <table class="uk-table uk-table-small uk-table-divider"
+                                       th:if="${#arrays.length(verificationRequests.get('REJECTED')) > 0}">
+                                    <thead>
+                                    <tr>
+                                        <th>Date Applied</th>
+                                        <th>Message</th>
+                                        <th>Date Resolved</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:with="APPROVED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).APPROVED},REJECTED=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).REJECTED},PENDING=${T(com.projectvibewave.vibewaveapp.enums.VerificationRequestStatus).PENDING}"
+                                        th:each="req: ${verificationRequests.get('REJECTED')}"
+                                        th:classappend="${req.status == APPROVED} ? 'bg-green-100' : (${req.status == REJECTED ? 'bg-red-100' : 'bg-orange-100'})">
+                                        <td th:text="${#temporals.format(req.dateApplied, 'dd/MM/yyyy HH:mm')}"></td>
+                                        <td th:onclick="changeDisplayMessage([[${req.message}]])">
+                                            <a class="uk-button uk-button-default" href="#modal-center" uk-toggle>Show
+                                                Message</a>
+                                        </td>
+                                        <td th:text="${req.dateResolved != null ? #temporals.format(req.dateResolved, 'dd/MM/yyyy HH:mm') : 'Not Resolved'}"></td>
+                                        <td th:text="${req.status}"></td>
+                                        <td th:if="${req.status == PENDING}" class="flex gap-2">
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/approve'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Approve request"
+                                                                            uk-icon="check"></span></button>
+                                            </form>
+                                            <form th:action="@{${'/admin/verification-requests/' + req.id + '/reject'}}"
+                                                  method="post">
+                                                <button type="submit"><span uk-tooltip="Reject request"
+                                                                            uk-icon="close"></span></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeDisplayMessage(message) {
+            var messageParagraph = document.querySelector("#modal-message");
+            messageParagraph.innerHTML = message;
+        }
+    </script>
+</div>
+
+</body>
+</html>

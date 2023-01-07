@@ -21,7 +21,6 @@ public class AlbumPostDto {
             "Make sure you only insert one space between words.")
     private String albumName;
     @NotNull
-    @PastOrPresent
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate publishDate;
     @NotNull

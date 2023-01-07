@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin-layout}">
+<head>
+  <title th:text="${'Edit User &quot;' + user.username + '&quot;'}"></title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <div th:if="${param.updated}" th:insert="fragments/success-message.html :: successMessage (message='You\'ve successfully updated your settings!')"></div>
+
+  <h1 class="uk-heading-small text-center mt-3" th:text="${'Edit User &quot;' + user.username + '&quot;'}"></h1>
+  <hr class="uk-divider-icon"/>
+  <div class="uk-container uk-container-xsmall">
+    <form action="#" th:action="@{${'/admin/user/' + userId + '/edit'}}" th:object="${user}" method="POST" enctype="multipart/form-data"
+          class="uk-form-horizontal uk-margin-large">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="email">E-Mail:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: mail"></span>
+            <input class="uk-input"
+                   th:classappend="${#fields.hasErrors('email')} ? 'uk-form-danger' : ''"
+                   id="email" type="text" th:field="*{email}"
+                   placeholder="Enter an E-Mail">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('email')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="username">Username:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: user"></span>
+            <input class="uk-input"
+                   th:classappend="${#fields.hasErrors('username')} ? 'uk-form-danger' : ''"
+                   id="username" type="text" th:field="*{username}"
+                   placeholder="Enter a username">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('username')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="artist-name">Artist Name:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <span class="uk-form-icon" uk-icon="icon: user"></span>
+            <input class="uk-input"
+                   th:classappend="${#fields.hasErrors('artistName')} ? 'uk-form-danger' : ''"
+                   id="artist-name" type="text" th:field="*{artistName}"
+                   placeholder="Enter an artist name">
+          </div>
+          <ul class="text-red-500">
+            <li th:each="err : ${#fields.errors('artistName')}" th:text="${err}"/>
+          </ul>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="is-private">Private:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <input id="is-private" class="uk-checkbox" type="checkbox" th:field="*{private}">
+          </div>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="is-private">Confirmed:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <input id="is-enabled" class="uk-checkbox" type="checkbox" th:field="*{enabled}">
+          </div>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="is-premium">Premium:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <input id="is-premium" class="uk-checkbox" type="checkbox" th:field="*{premium}">
+          </div>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="is-verified">Verified:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <input id="is-verified" class="uk-checkbox" type="checkbox" th:field="*{verified}">
+          </div>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="is-admin">Admin:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <input id="is-admin" class="uk-checkbox" type="checkbox" th:field="*{admin}">
+          </div>
+        </div>
+      </div>
+
+      <button id="save-button" class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Save</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

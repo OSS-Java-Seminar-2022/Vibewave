@@ -65,4 +65,4 @@ VibeWave is a platform for music distribution. You can share your own hard work 
 | Name | GitHub Link |
 | --- | --- |
 | Toni Kazinoti | [GitHub](https://github.com/tonikazinoti) |
-| L. V. (banquetblintzs) | [GitHub](https://github.com/banquetblintzs) |
+| L. V. (withdrew) | [GitHub](https://github.com/banquetblintzs) |

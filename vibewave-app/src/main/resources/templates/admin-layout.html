@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--Tailwind CSS -->
+  <script src="/tailwindcss.3.2.1.js"></script>
+  <!-- UIkit CSS -->
+  <link rel="stylesheet" href="/uikit.min.css"/>
+  <!-- UIkit JS -->
+  <script src="/uikit.min.js"></script>
+  <!-- UIkit Icons JS -->
+  <script src="/uikit-icons.min.js"></script>
+  <!-- jQuery -->
+  <script src="/jquery-3.6.1.min.js"></script>
+  <script src="/multiselect-dropdown.js"></script>
+  <title layout:title-pattern="$CONTENT_TITLE | $LAYOUT_TITLE">VW Admin</title>
+</head>
+<body>
+<div id="logout-confirmation" uk-modal>
+  <div class="uk-modal-dialog uk-modal-body">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <h2 class="uk-modal-title">Confirmation</h2>
+    <p class="my-5">Are you sure you want to log out of your account?</p>
+    <div class="uk-text-right mt-3">
+      <form class="inline" th:action="@{/logout}" method="post">
+        <button class="uk-button uk-button-danger bg-pink-500" type="submit">Log Out</button>
+      </form>
+    </div>
+  </div>
+</div>
+<header>
+  <nav class="uk-navbar-container justify-between px-5 gap-5" uk-navbar>
+    <div class="uk-navbar-left">
+      <ul class="uk-navbar-nav">
+        <li th:class="${#httpServletRequest.requestURI == '/'} ? 'uk-active' : ''">
+          <a th:href="@{/}"><span uk-icon="chevron-left"></span>Back to VibeWave</a>
+        </li>
+        <li>
+          <a>Actions</a>
+          <div class="uk-navbar-dropdown">
+            <ul class="uk-nav uk-navbar-dropdown-nav">
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/admin/users')} ? 'uk-active' : ''"><a th:href="@{/admin/users}">Users</a></li>
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/admin/verification-requests')} ? 'uk-active' : ''"><a th:href="@{/admin/verification-requests}">Verification Requests</a></li>
+              <li th:class="${#httpServletRequest.requestURI.startsWith('/admin/staff-selections')} ? 'uk-active' : ''"><a th:href="@{/admin/staff-selections}">Staff Selections</a></li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="uk-navbar-right">
+      <ul class="uk-navbar-nav">
+        <li>
+          <a href="#"><span
+                  th:text="${#authentication.getName()}"></span><span
+                  uk-icon="user"></span></a>
+          <div class="uk-navbar-dropdown">
+            <ul class="uk-nav uk-navbar-dropdown-nav">
+              <li>
+                <a href="#logout-confirmation" uk-toggle="target: #logout-confirmation">Log Out</a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="uk-container uk-container-large">
+    <section layout:fragment="content">
+      <p>This is filled by the content template.</p>
+    </section>
+  </div>
+</main>
+
+<footer class="p-5">
+  <p class="text-center">&copy; 2023 VW Admin. All rights reserved.</p>
+</footer>
+
+<script>
+  $(".alert").delay(4000).fadeOut(500);
+</script>
+
+</body>
+</html>

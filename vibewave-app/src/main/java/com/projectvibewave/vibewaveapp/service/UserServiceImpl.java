@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
         templateModel.put("confirmationLink", confirmationLink);
         templateModel.put("username", user.getUsername());
 
-        emailService.sendHtml(user.getEmail(), EMAIL_CONFIRMATION_SUBJECT, templateModel);
+        emailService.sendHtml(user.getEmail(), EMAIL_CONFIRMATION_SUBJECT, templateModel, EmailService.ACCOUNT_CONFIRMATION_TEMPLATE);
     }
 
     @Override
@@ -179,6 +179,15 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
+        var userToUpdate = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        var artistNameExists = userRepository.existsByArtistName(userSettingsDto.getArtistName());
+        var isArtistNameChanged = !Objects.equals(userSettingsDto.getArtistName(), userToUpdate.getArtistName());
+        if (artistNameExists && isArtistNameChanged) {
+            bindingResult.rejectValue("artistName", "error.user", "Artist name is already being used.");
+            return false;
+        }
+
         var file = userSettingsDto.getProfilePhoto();
         var contentType = file.getContentType();
         var size = file.getSize();
@@ -190,7 +199,6 @@ public class UserServiceImpl implements UserService {
             return false;
         }
 
-        var userToUpdate = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (shouldUpdateProfilePhoto) {
             var filename = fileService.save(file);
             userToUpdate.setProfilePhotoUrl(filename);

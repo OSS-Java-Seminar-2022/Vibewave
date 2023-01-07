@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin-layout}">
+<head>
+  <title>Staff Selections</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+  <h1 class="uk-heading-small text-center mt-3">Staff Selections</h1>
+  <hr class="uk-divider-icon"/>
+  <div class="uk-container uk-container-xsmall">
+    <form action="#" th:action="@{/admin/staff-selections}" th:object="${staffSelections}" method="POST"
+          class="uk-form-horizontal uk-margin-large">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="artists">Staff Selections:</label>
+        <div class="uk-form-controls">
+          <div class="uk-inline block">
+            <select id="artists" class="w-full" th:field="${staffSelections.playlistsIds}" multiple multiselect-search="true" multiselect-select-all="false">
+              <option th:each="playlist: ${playlists}" th:value="${playlist.id}" th:text="${playlist.name + ' by ' + (!#strings.isEmpty(playlist.user.artistName) ? playlist.user.artistName : playlist.user.username)}"></option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button class="uk-button uk-button-primary bg-blue-500" type="submit" onclick="this.form.submit(); this.disabled=true;">Save</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

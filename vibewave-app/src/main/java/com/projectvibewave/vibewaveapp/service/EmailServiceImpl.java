@@ -41,10 +41,10 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @Async
-    public void sendHtml(String to, String subject, Map<String, Object> templateModel) {
+    public void sendHtml(String to, String subject, Map<String, Object> templateModel, String emailTemplateName) {
         var context = new Context();
         context.setVariables(templateModel);
-        String htmlContent = templateEngine.process("emails/email-confirmation", context);
+        String htmlContent = templateEngine.process("emails/" + emailTemplateName, context);
         send(to, subject, htmlContent);
     }
 }

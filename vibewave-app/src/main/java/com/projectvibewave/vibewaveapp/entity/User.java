@@ -45,7 +45,7 @@ public class User implements UserDetails {
     private List<Album> albums;
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<Track> tracks;
+    private Set<Track> tracks;
     @ToString.Exclude
     @OneToMany(mappedBy = "user")
     private List<Playlist> playlists;
@@ -88,6 +88,10 @@ public class User implements UserDetails {
 
     public void addRole(Role role) {
         roles.add(role);
+    }
+
+    public void removeRole(Role role) {
+        roles.remove(role);
     }
 
     public void setEnabled(boolean enabled) {

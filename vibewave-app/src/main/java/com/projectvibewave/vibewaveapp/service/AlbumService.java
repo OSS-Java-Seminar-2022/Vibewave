@@ -11,6 +11,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 
 public interface AlbumService {
+    int ALBUM_UPLOAD_MAX_MONTHS_BEFORE_RELEASE = 6;
+
     boolean setAlbumFormViewModel(Model model, User authenticatedUser, Long albumId);
 
     Album tryAddAlbum(User authenticatedUser, AlbumPostDto albumPostDto, BindingResult bindingResult, Model model) throws IOException, UnsupportedAudioFileException;

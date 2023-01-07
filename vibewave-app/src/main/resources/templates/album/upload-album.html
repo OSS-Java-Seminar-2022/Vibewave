@@ -11,7 +11,10 @@
   <h1 class="uk-heading-small text-center mt-3" th:text="${isEdit ? 'Edit Album' : 'Upload Album'}"></h1>
   <hr class="uk-divider-icon"/>
   <div class="uk-container uk-container-xsmall">
-    <form action="#" th:action="@{${isEdit ? ('/album/' + album.albumId + '/edit') : '/album/add'}}" th:object="${album}" method="POST" enctype="multipart/form-data"
+    <div class="uk-alert-danger" th:if="${hasExceededAlbumUploadLimit}" uk-alert>
+      <p>Unfortunately, your account has exceeded a limit on uploaded albums. Either upgrade to a Premium account or delete an old album.</p>
+    </div>
+    <form th:if="${!hasExceededAlbumUploadLimit}" action="#" th:action="@{${isEdit ? ('/album/' + album.albumId + '/edit') : '/album/add'}}" th:object="${album}" method="POST" enctype="multipart/form-data"
           class="uk-form-horizontal uk-margin-large">
       <div class="uk-margin">
         <label class="uk-form-label" for="album-name">Album Name:</label>
