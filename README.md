@@ -21,7 +21,7 @@ VibeWave is a platform for music distribution. You can share your own hard work 
   * Three roles: Basic User (limited features), Premium User, Admin
 * Users can follow each other
 * Users can upload their own albums (feature limited in some way for Basic users)
-  * Publish date can be set to notify followers sooner and create hype
+  * Publish date can be set up to 6 months in the future to notify followers and create hype
 * All users, including guests, can listen to all published albums
   * Note: Number of plays is tracked, tho in a simple manner - each query is one play with no particular rules
 * Users can create private or public playlists (which they can share with friends for example) and add tracks to it from various albums and artists
