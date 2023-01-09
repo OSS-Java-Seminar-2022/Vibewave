@@ -43,10 +43,6 @@ public class VerificationController {
 
         var authenticatedUser = (User) authentication.getPrincipal();
 
-        if (!verificationService.hasUserMetRequiredConditions(authenticatedUser)) {
-            return "redirect:/verification/request";
-        }
-
         var isSuccessful = verificationService.trySendVerificationRequest(authenticatedUser, verificationRequestPostDto, bindingResult, model);
 
         if (!isSuccessful) {

@@ -20,13 +20,13 @@ public interface UserService extends UserDetailsService {
 
     ConfirmationTokenStatus tryConfirmEmail(String token);
 
-    boolean reSendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult);
+    boolean resendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult);
 
-    boolean tryUpdateUserSettings(UserSettingsDto userSettingsDto, BindingResult bindingResult);
+    boolean tryUpdateUserSettings(User authenticatedUser, UserSettingsDto userSettingsDto, BindingResult bindingResult);
 
     UserSignUpDto getUserSignUpDto();
 
-    UserSettingsDto getAuthenticatedUserSettings();
+    UserSettingsDto getAuthenticatedUserSettings(User authenticatedUser);
 
     boolean setUserByIdModelView(Model model, User authenticatedUser, Long userId);
 
