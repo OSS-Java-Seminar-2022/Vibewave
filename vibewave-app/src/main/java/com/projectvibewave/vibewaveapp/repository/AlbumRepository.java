@@ -21,4 +21,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query("select distinct a from Album a join a.user u join u.followers f where f.id = ?1 order by a.publishDate DESC")
     List<Album> findWhereUserIsFollowerOrderByPublishDateDesc(Long userId);
+
+    @Query("select distinct t.album from Track t join t.album a where a.user.id <> ?1")
+    List<Album> findAllWhereUserIsFeaturedOn(Long userId);
 }

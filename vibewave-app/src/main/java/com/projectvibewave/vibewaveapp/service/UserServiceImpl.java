@@ -7,6 +7,7 @@ import com.projectvibewave.vibewaveapp.enums.ConfirmationTokenStatus;
 import com.projectvibewave.vibewaveapp.dto.UserSignUpDto;
 import com.projectvibewave.vibewaveapp.entity.ConfirmationToken;
 import com.projectvibewave.vibewaveapp.entity.User;
+import com.projectvibewave.vibewaveapp.repository.AlbumRepository;
 import com.projectvibewave.vibewaveapp.repository.ConfirmationTokenRepository;
 import com.projectvibewave.vibewaveapp.repository.RoleRepository;
 import com.projectvibewave.vibewaveapp.repository.UserRepository;
@@ -36,10 +37,13 @@ public class UserServiceImpl implements UserService {
     private final static String DEFAULT_ROLE_NAME = "ROLE_BASIC";
     private final static int TOKEN_EXPIRATION_TIME_MINUTES = 15;
     private final static String USER_NOT_FOUND_MSG = "User %s not found";
+    private final static String CONFIRMATION_LINK = "http://%s:%sauth/confirm?token=%s";
+
     private final static String EMAIL_CONFIRMATION_SUBJECT = "VibeWave - Confirm Your E-Mail";
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final AlbumRepository albumRepository;
     private final RoleRepository roleRepository;
     private final ConfirmationTokenRepository confirmationTokenRepository;
     private final EmailService emailService;
@@ -54,25 +58,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean trySignUp(UserSignUpDto userDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return false;
-        }
-
-        if (!userDto.getPassword().equals(userDto.getRepeatedPassword())) {
-            bindingResult.rejectValue("repeatedPassword", "error.user", "Passwords do not match");
-            return false;
-        }
-
-        var usernameExists = userRepository.existsByUsername(userDto.getUsername());
-        if (usernameExists) {
-            bindingResult.rejectValue("username", "error.user", "Username already exists");
-            return false;
-        }
-
-        var emailExists = userRepository.existsByEmail(userDto.getEmail());
-        if (emailExists) {
-            bindingResult.rejectValue("email", "error.user", "E-Mail already exists");
+    public boolean trySignUp(UserSignUpDto userSignUpDto, BindingResult bindingResult) {
+        if (!isUserSignUpDataValid(userSignUpDto, bindingResult)) {
             return false;
         }
 
@@ -81,22 +68,46 @@ public class UserServiceImpl implements UserService {
         );
 
         var user = User.builder()
-                .username(userDto.getUsername())
-                .password(passwordEncoder.encode(userDto.getPassword()))
-                .email(userDto.getEmail())
+                .username(userSignUpDto.getUsername())
+                .password(passwordEncoder.encode(userSignUpDto.getPassword()))
+                .email(userSignUpDto.getEmail())
                 .roles(Sets.newHashSet(defaultRole))
                 .build();
 
         userRepository.save(user);
 
         createConfirmationTokenAndSendEmail(user);
+        return true;
+    }
+
+    private boolean isUserSignUpDataValid(UserSignUpDto userSignUpDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return false;
+        }
+
+        if (!userSignUpDto.getPassword().equals(userSignUpDto.getRepeatedPassword())) {
+            bindingResult.rejectValue("repeatedPassword", "error.user", "Passwords do not match");
+            return false;
+        }
+
+        var usernameExists = userRepository.existsByUsername(userSignUpDto.getUsername());
+        if (usernameExists) {
+            bindingResult.rejectValue("username", "error.user", "Username already exists");
+            return false;
+        }
+
+        var emailExists = userRepository.existsByEmail(userSignUpDto.getEmail());
+        if (emailExists) {
+            bindingResult.rejectValue("email", "error.user", "E-Mail already exists");
+            return false;
+        }
 
         return true;
     }
 
     @Override
     public void createConfirmationTokenAndSendEmail(User user) {
-        String token = UUID.randomUUID().toString();
+        var token = UUID.randomUUID().toString();
         var confirmationToken = ConfirmationToken.builder()
                 .user(user)
                 .token(token)
@@ -107,7 +118,7 @@ public class UserServiceImpl implements UserService {
         var templateModel = new HashMap<String, Object>();
         var port = servletRequest.getServerPort();
         var hostName = servletRequest.getServerName();
-        var confirmationLink = "http://" + hostName + ":" + port + "/auth/confirm?token=" + token;
+        var confirmationLink = CONFIRMATION_LINK.formatted(hostName, port, token);
         templateModel.put("confirmationLink", confirmationLink);
         templateModel.put("username", user.getUsername());
 
@@ -144,28 +155,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public boolean reSendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
+    public boolean resendConfirmationToken(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
+        var user = checkEmailConfirmationDataAndReturnUser(emailConfirmationDto, bindingResult);
+        if (user == null) {
             return false;
         }
 
+        confirmationTokenRepository.removeAllByUser(user);
+
+        createConfirmationTokenAndSendEmail(user);
+        return true;
+    }
+
+    private User checkEmailConfirmationDataAndReturnUser(EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult) {
         var user = userRepository.findByEmail(emailConfirmationDto.getEmail());
+
+        if (bindingResult.hasErrors()) {
+            return null;
+        }
 
         if (user.isEmpty()) {
             bindingResult.rejectValue("email", "error.emailConfirmation", "No user found with that E-Mail");
-            return false;
+            return null;
         }
 
         var foundUser = user.get();
         if (foundUser.isEnabled()) {
             bindingResult.rejectValue("email", "error.emailConfirmation", "Account with that E-Mail has already been confirmed");
-            return false;
+            return null;
         }
 
-        confirmationTokenRepository.removeAllByUser(foundUser);
-
-        createConfirmationTokenAndSendEmail(foundUser);
-        return true;
+        return user.get();
     }
 
     private boolean isConfirmationTokenExpired(ConfirmationToken confirmationToken) {
@@ -173,16 +193,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean tryUpdateUserSettings(UserSettingsDto userSettingsDto, BindingResult bindingResult) {
+    public boolean tryUpdateUserSettings(User authenticatedUser, UserSettingsDto userSettingsDto, BindingResult bindingResult) {
         var shouldSetArtistNameToNull = "".equals(userSettingsDto.getArtistName());
         if (bindingResult.hasErrors() && !shouldSetArtistNameToNull) {
             return false;
         }
 
-        var userToUpdate = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         var artistNameExists = userRepository.existsByArtistName(userSettingsDto.getArtistName());
-        var isArtistNameChanged = !Objects.equals(userSettingsDto.getArtistName(), userToUpdate.getArtistName());
+        var isArtistNameChanged = !Objects.equals(userSettingsDto.getArtistName(), authenticatedUser.getArtistName());
         if (artistNameExists && isArtistNameChanged) {
             bindingResult.rejectValue("artistName", "error.user", "Artist name is already being used.");
             return false;
@@ -201,12 +219,11 @@ public class UserServiceImpl implements UserService {
 
         if (shouldUpdateProfilePhoto) {
             var filename = fileService.save(file);
-            userToUpdate.setProfilePhotoUrl(filename);
+            authenticatedUser.setProfilePhotoUrl(filename);
         }
-        userToUpdate.setArtistName(shouldSetArtistNameToNull ? null : userSettingsDto.getArtistName());
-        userToUpdate.setPrivate(userSettingsDto.isPrivate());
-        userRepository.save(userToUpdate);
-
+        authenticatedUser.setArtistName(shouldSetArtistNameToNull ? null : userSettingsDto.getArtistName());
+        authenticatedUser.setPrivate(userSettingsDto.isPrivate());
+        userRepository.save(authenticatedUser);
         return true;
     }
 
@@ -216,14 +233,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserSettingsDto getAuthenticatedUserSettings() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        var username = auth.getName();
-        var currentUser = loadUserByUsername(username);
-
+    public UserSettingsDto getAuthenticatedUserSettings(User authenticatedUser) {
         var userSettings = new UserSettingsDto();
-        userSettings.setArtistName(currentUser.getArtistName());
-        userSettings.setPrivate(currentUser.getPrivate());
+        userSettings.setArtistName(authenticatedUser.getArtistName());
+        userSettings.setPrivate(authenticatedUser.getPrivate());
 
         return userSettings;
     }
@@ -237,6 +250,8 @@ public class UserServiceImpl implements UserService {
         }
 
         model.addAttribute("user", user);
+        var featuredOnAlbums = albumRepository.findAllWhereUserIsFeaturedOn(userId);
+        model.addAttribute("featuredOnAlbums", featuredOnAlbums);
 
         if (authenticatedUser != null) {
             var follower = userRepository.findById(authenticatedUser.getId()).orElse(null);

@@ -37,7 +37,7 @@ public class VerificationServiceImpl implements VerificationService {
     public boolean trySendVerificationRequest(User authenticatedUser, VerificationRequestPostDto verificationRequestPostDto, BindingResult bindingResult, Model model) {
         setVerificationRequestModel(authenticatedUser, model);
 
-        if (bindingResult.hasErrors()) {
+        if (!hasUserMetRequiredConditions(authenticatedUser) || bindingResult.hasErrors()) {
             return false;
         }
 
@@ -57,8 +57,7 @@ public class VerificationServiceImpl implements VerificationService {
         return true;
     }
 
-    @Override
-    public boolean hasUserMetRequiredConditions(User authenticatedUser) {
+    private boolean hasUserMetRequiredConditions(User authenticatedUser) {
         var userTotalPlays = userRepository.getTotalPlaysByUser(authenticatedUser.getId());
         return userTotalPlays >= REQUIRED_TOTAL_PLAYS;
     }

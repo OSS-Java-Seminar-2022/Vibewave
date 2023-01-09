@@ -73,7 +73,7 @@ public class AuthController {
     @PostMapping("/confirm/resend")
     public String resendConfirmationToken(@Valid @ModelAttribute("emailConfirmation") EmailConfirmationDto emailConfirmationDto, BindingResult bindingResult, Model model) {
         logger.info("trying to resend email confirmation....");
-        var isSuccessful = userService.reSendConfirmationToken(emailConfirmationDto, bindingResult);
+        var isSuccessful = userService.resendConfirmationToken(emailConfirmationDto, bindingResult);
 
         if (!isSuccessful) {
             return "auth/resend-confirmation";

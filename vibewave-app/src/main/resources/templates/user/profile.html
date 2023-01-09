@@ -26,7 +26,7 @@
         <p><b>Albums Published: </b><span th:text="${#arrays.length(user.albums)}"></span></p>
         <p><b>Followers: </b><span th:text="${#arrays.length(user.followers)}"></span></p>
       </div>
-      <div sec:authorize="isAuthenticated()" th:if="${user.id != #authentication.principal.id}">
+      <div sec:authorize="isAuthenticated()" th:if="${user.id != #authentication.principal.id}" class="mt-2">
         <form th:action="@{${'/user/follow/' + user.id}}" method="post">
           <button type="submit" class="uk-button uk-button-primary bg-blue-500" th:text="${isFollowing ? 'Unfollow' : 'Follow'}"></button>
         </form>
@@ -45,6 +45,20 @@
       <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
     </a>
   </div>
+
+  <h2 class="text-3xl mb-7 mt-5 border-b">Featured On</h2>
+  <div class="flex flex-wrap gap-9">
+    <div class="uk-alert-primary" uk-alert th:if="${#arrays.length(featuredOnAlbums) == 0}">
+      <p>This user has not been featured on any other albums yet.</p>
+    </div>
+    <a th:each="album: ${featuredOnAlbums}" th:href="@{${'/album/' + album.id}}" class="w-fit !no-underline hover:scale-105 duration-300">
+      <div class="sm:w-[250px] sm:h-[250px] w-full aspect-square border border-neutral-300">
+        <img class="w-full h-full aspect-square object-cover" th:src="@{${'/file/' + (album.coverPhotoUrl != null ? album.coverPhotoUrl : 'default-album.png')}}">
+      </div>
+      <h3 class="text-xl text-center" th:uk-tooltip="${album.name}" th:text="${#strings.length(album.name) > 23 ? #strings.substring(album.name, 0, 23) + '...' : album.name}"></h3>
+    </a>
+  </div>
+
   <h2 class="text-3xl mb-7 mt-5 border-b">Playlists</h2>
   <div class="flex flex-wrap gap-9 playlists-list">
 

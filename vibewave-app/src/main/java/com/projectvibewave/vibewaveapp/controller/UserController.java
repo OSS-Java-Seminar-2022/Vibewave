@@ -26,21 +26,24 @@ public class UserController {
 
     @GetMapping("/settings")
     @PreAuthorize("isAuthenticated()")
-    public String getUserSettings(Model model) {
+    public String getUserSettings(Authentication authentication, Model model) {
         logger.info("Accessed User Settings Page");
 
-        var userSettings = userService.getAuthenticatedUserSettings();
+        var authenticatedUser = (User) authentication.getPrincipal();
+        var userSettings = userService.getAuthenticatedUserSettings(authenticatedUser);
         model.addAttribute("settings", userSettings);
         return "user/settings";
     }
 
     @PostMapping("/settings")
     @PreAuthorize("isAuthenticated()")
-    public String updateUserSettings(@Valid @ModelAttribute("settings") UserSettingsDto userSettingsDto,
+    public String updateUserSettings(Authentication authentication,
+                                     @Valid @ModelAttribute("settings") UserSettingsDto userSettingsDto,
                                      BindingResult bindingResult, Model model) throws IOException  {
         logger.info("Trying to update user settings....");
 
-        var isSuccessful = userService.tryUpdateUserSettings(userSettingsDto, bindingResult);
+        var authenticatedUser = (User) authentication.getPrincipal();
+        var isSuccessful = userService.tryUpdateUserSettings(authenticatedUser, userSettingsDto, bindingResult);
 
         if (!isSuccessful) {
             return "user/settings";

@@ -1,6 +1,5 @@
 package com.projectvibewave.vibewaveapp.service;
 
-import com.projectvibewave.vibewaveapp.dto.AdminEditUserDto;
 import com.projectvibewave.vibewaveapp.dto.VerificationRequestPostDto;
 import com.projectvibewave.vibewaveapp.entity.User;
 import org.springframework.ui.Model;
@@ -10,6 +9,4 @@ public interface VerificationService {
     boolean setVerificationRequestModel(User authenticatedUser, Model model);
 
     boolean trySendVerificationRequest(User authenticatedUser, VerificationRequestPostDto verificationRequestPostDto, BindingResult bindingResult, Model model);
-
-    boolean hasUserMetRequiredConditions(User authenticatedUser);
 }
