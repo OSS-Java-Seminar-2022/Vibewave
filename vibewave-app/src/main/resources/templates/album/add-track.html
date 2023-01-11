@@ -36,7 +36,7 @@
             <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true">
               <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${#strings.isEmpty(artist.artistName) ? artist.username : artist.artistName}"></option>
             </select>
-            <span uk-tooltip="Only mutually followed users will appear here" uk-icon="info"></span>
+            <span uk-tooltip="In order to credit an artist, you need to be following each other" uk-icon="info"></span>
           </div>
           <ul class="text-red-500">
             <li th:each="err : ${#fields.errors('usersIds')}" th:text="${err}"/>
