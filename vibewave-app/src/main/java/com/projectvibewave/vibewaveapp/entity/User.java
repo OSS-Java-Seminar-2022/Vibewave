@@ -12,6 +12,7 @@ import java.util.*;
 @Entity
 @Table(name = "app_user", indexes = {
         @Index(name = "usernameIndex", columnList = "username", unique = true),
+        @Index(name = "artistNameIndex", columnList = "artistName", unique = true),
 })
 @ToString
 @NoArgsConstructor
