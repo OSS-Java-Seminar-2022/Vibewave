@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Entity
 @Table(indexes = {
-        @Index(name = "roleNameIndex", columnList = "name", unique = true),
+        @Index(name = "roleNameIndex", columnList = "role_name", unique = true),
 })
 @Getter
 @Setter

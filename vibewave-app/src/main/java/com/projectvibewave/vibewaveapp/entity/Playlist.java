@@ -29,7 +29,12 @@ public class Playlist {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
     @ToString.Exclude
-    @ManyToMany(mappedBy = "playlists", fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "playlists_tracks",
+            joinColumns = @JoinColumn(name = "playlist_id"),
+            inverseJoinColumns = @JoinColumn(name = "track_id")
+    )
     private Set<Track> tracks;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="user_id")
