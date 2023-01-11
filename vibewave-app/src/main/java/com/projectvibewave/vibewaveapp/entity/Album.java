@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "albumNameIndex", columnList = "name"),
+})
 @Getter
 @Setter
 @ToString
@@ -21,12 +24,12 @@ public class Album {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "album_id", nullable = false)
     private Long id;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="album_format_id")
     private AlbumFormat albumFormat;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="user_id")
     private User user;
     private LocalDate publishDate;
@@ -34,7 +37,7 @@ public class Album {
     private LocalDateTime uploadDate = LocalDateTime.now();
     private String coverPhotoUrl;
     @ToString.Exclude
-    @OneToMany(mappedBy = "album")
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL)
     private List<Track> tracks;
 
     public boolean isReleased() {

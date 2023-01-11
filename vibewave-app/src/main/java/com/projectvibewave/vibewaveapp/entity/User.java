@@ -10,11 +10,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
+@Table(name = "app_user", indexes = {
+        @Index(name = "usernameIndex", columnList = "username", unique = true),
+})
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "app_user")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +35,7 @@ public class User implements UserDetails {
     private String profilePhotoUrl;
     private boolean isVerified = false;
     private boolean isEnabled;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -41,16 +43,16 @@ public class User implements UserDetails {
     )
     private Set<Role> roles;
     @ToString.Exclude
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Album> albums;
     @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
     @ToString.Exclude
     private Set<Track> tracks;
     @ToString.Exclude
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Playlist> playlists;
     @ToString.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="followings",
             joinColumns=@JoinColumn(name="follower_user_id"),
             inverseJoinColumns=@JoinColumn(name="following_user_id")
@@ -58,7 +60,7 @@ public class User implements UserDetails {
     private Set<User> following;
 
     @ToString.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="followings",
             joinColumns=@JoinColumn(name="following_user_id"),
             inverseJoinColumns=@JoinColumn(name="follower_user_id")
@@ -81,6 +83,8 @@ public class User implements UserDetails {
     public List<Playlist> getPlaylists() { return playlists; }
     public Set<User> getFollowing() { return following; }
     public Set<User> getFollowers() { return followers; }
+    public void setFollowing(Set<User> following) { this.following = following; }
+    public void setFollowers(Set<User> followers) { this.followers = followers; }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
@@ -199,6 +203,26 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    public void addFollower(User follower) {
+        getFollowers().add(follower);
+        follower.getFollowing().add(this);
+    }
+
+    public void addFollowing(User following) {
+        getFollowing().add(following);
+        following.getFollowers().add(this);
+    }
+
+    public void removeFollower(User follower) {
+        getFollowers().remove(follower);
+        follower.getFollowing().remove(this);
+    }
+
+    public void removeFollowing(User following) {
+        getFollowing().remove(following);
+        following.getFollowers().remove(this);
     }
 
     @Override

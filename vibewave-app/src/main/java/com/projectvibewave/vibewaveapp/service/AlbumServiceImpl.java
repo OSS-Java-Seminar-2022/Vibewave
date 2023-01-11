@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -195,7 +196,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public boolean setAlbumAddTrackViewModel(User authenticatedUser, Long albumId, Model model) {
         var album = albumRepository.findById(albumId).orElse(null);
-        var artists = userRepository.findAllByArtistNameIsNotNull();
+        var artists = userRepository.findAllMutuallyFollowedUsers(authenticatedUser.getId());
 
         if (album == null ||
                 !Objects.equals(album.getUser().getId(), authenticatedUser.getId()) && !authenticatedUser.isAdmin()) {
@@ -236,9 +237,15 @@ public class AlbumServiceImpl implements AlbumService {
             return false;
         }
 
-        var artists = new ArrayList<User>();
+        var mutuallyFollowedUsers = userRepository.findAllMutuallyFollowedUsersAsSet(authenticatedUser.getId());
+        var involvedArtists = new HashSet<User>();
+        involvedArtists.add(authenticatedUser);
+
         trackPostDto.getUsersIds().forEach(userId -> {
-            userRepository.findById(userId).ifPresent(artists::add);
+            var involvedArtist = userRepository.findById(userId).orElse(null);
+            if (involvedArtist != null && mutuallyFollowedUsers.contains(involvedArtist)) {
+                involvedArtists.add(involvedArtist);
+            }
         });
 
         var filename = fileService.save(trackPostDto.getAudioSource());
@@ -253,7 +260,7 @@ public class AlbumServiceImpl implements AlbumService {
                 .name(trackPostDto.getTrackName())
                 .audioSourceUrl(filename)
                 .durationSeconds(durationSeconds != null ? durationSeconds.intValue() : 0)
-                .users(Set.copyOf(artists))
+                .users(involvedArtists)
                 .build();
 
         trackRepository.save(newTrack);
@@ -277,7 +284,6 @@ public class AlbumServiceImpl implements AlbumService {
             return false;
         }
 
-        trackRepository.deleteAllByAlbum(album);
         albumRepository.delete(album);
 
         return true;

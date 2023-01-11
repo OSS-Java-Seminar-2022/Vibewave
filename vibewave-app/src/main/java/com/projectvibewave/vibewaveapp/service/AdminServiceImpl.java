@@ -174,23 +174,6 @@ public class AdminServiceImpl implements AdminService {
             return false;
         }
 
-        var albumsByUser = albumRepository.findAllByUser(user);
-        albumsByUser.forEach(album -> {
-            trackRepository.deleteAllByAlbum(album);
-            albumRepository.delete(album);
-        });
-        var staffSelectionsByUser = staffSelectionRepository.findAllBySelectedPlaylist_User(user);
-        staffSelectionRepository.deleteAll(staffSelectionsByUser);
-        var playlistsByUser = playlistRepository.findAllByUser(user);
-        playlistRepository.deleteAll(playlistsByUser);
-        var tracksByUser = trackRepository.findAllByUser(user.getId());
-        tracksByUser.forEach(track -> {
-            track.getUsers().remove(user);
-            trackRepository.save(track);
-        });
-        var verificationRequests = verificationRequestRepository.findAllByUser(user);
-        verificationRequestRepository.deleteAllInBatch(verificationRequests);
-
         userRepository.delete(user);
         return true;
     }

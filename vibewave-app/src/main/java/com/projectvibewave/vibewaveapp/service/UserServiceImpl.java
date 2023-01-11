@@ -279,9 +279,9 @@ public class UserServiceImpl implements UserService {
         var follower = userRepository.findById(authenticatedUser.getId()).orElse(null);
 
         if (user.getFollowers().contains(follower)) {
-            user.getFollowers().remove(follower);
+            user.removeFollower(follower);
         } else {
-            user.getFollowers().add(follower);
+            user.addFollower(follower);
         }
 
         userRepository.save(user);

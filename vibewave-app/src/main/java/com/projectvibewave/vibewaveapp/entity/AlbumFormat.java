@@ -5,6 +5,9 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
+@Table(indexes = {
+    @Index(name = "roleNameIndex", columnList = "name", unique = true),
+})
 @Getter
 @Setter
 @ToString

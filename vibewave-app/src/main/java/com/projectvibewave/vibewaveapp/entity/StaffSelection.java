@@ -16,7 +16,7 @@ public class StaffSelection {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "staff_selection_id", nullable = false)
     private Long id;
-    @OneToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "selected_playlist_id", referencedColumnName = "playlist_id", nullable = false)
     private Playlist selectedPlaylist;
 }

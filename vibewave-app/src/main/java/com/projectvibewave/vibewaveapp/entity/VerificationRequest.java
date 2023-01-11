@@ -19,7 +19,7 @@ public class VerificationRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "verification_request_id", nullable = false)
     private Long id;
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Column(columnDefinition = "TEXT", nullable = false)

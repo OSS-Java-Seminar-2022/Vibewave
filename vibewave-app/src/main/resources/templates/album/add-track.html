@@ -30,12 +30,13 @@
         </div>
       </div>
       <div class="uk-margin">
-        <label class="uk-form-label" for="artists">Artists:</label>
+        <label class="uk-form-label" for="artists">Other involved artists:</label>
         <div class="uk-form-controls">
-          <div class="uk-inline block">
-            <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true" multiselect-select-all="true" multiselect-max-items="5">
-              <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${artist.artistName}"></option>
+          <div class="uk-inline block flex items-center justify-between gap-1">
+            <select id="artists" class="w-full" th:field="${track.usersIds}" multiple multiselect-search="true">
+              <option th:each="artist: ${artists}" th:value="${artist.id}" th:text="${#strings.isEmpty(artist.artistName) ? artist.username : artist.artistName}"></option>
             </select>
+            <span uk-tooltip="Only mutually followed users will appear here" uk-icon="info"></span>
           </div>
           <ul class="text-red-500">
             <li th:each="err : ${#fields.errors('usersIds')}" th:text="${err}"/>
