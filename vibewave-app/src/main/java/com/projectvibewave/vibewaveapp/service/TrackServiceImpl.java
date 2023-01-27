@@ -39,7 +39,7 @@ public class TrackServiceImpl implements TrackService {
             return false;
         }
 
-        var artists = userRepository.findAllByArtistNameIsNotNull();
+        var artists = userRepository.findAllMutuallyFollowedUsers(authenticatedUser.getId());
 
         model.addAttribute("album", track.getAlbum());
         model.addAttribute("artists", artists);
@@ -93,12 +93,18 @@ public class TrackServiceImpl implements TrackService {
             track.setDurationSeconds(durationSeconds != null ? durationSeconds.intValue() : 0);
         }
 
-        var artists = new ArrayList<User>();
+        var mutuallyFollowedUsers = userRepository.findAllMutuallyFollowedUsersAsSet(authenticatedUser.getId());
+        var involvedArtists = new HashSet<User>();
+        involvedArtists.add(authenticatedUser);
+
         trackPostDto.getUsersIds().forEach(userId -> {
-            userRepository.findById(userId).ifPresent(artists::add);
+            var involvedArtist = userRepository.findById(userId).orElse(null);
+            if (involvedArtist != null && mutuallyFollowedUsers.contains(involvedArtist)) {
+                involvedArtists.add(involvedArtist);
+            }
         });
 
-        track.setUsers(Set.copyOf(artists));
+        track.setUsers(involvedArtists);
         track.setName(trackPostDto.getTrackName());
 
         trackRepository.save(track);

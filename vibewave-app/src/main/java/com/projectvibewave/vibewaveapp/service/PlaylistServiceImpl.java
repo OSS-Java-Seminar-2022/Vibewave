@@ -124,7 +124,6 @@ public class PlaylistServiceImpl implements PlaylistService {
             return false;
         }
 
-        staffSelectionRepository.findBySelectedPlaylist(playlist).ifPresent(staffSelectionRepository::delete);
         playlistRepository.delete(playlist);
 
         return true;

@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "playlistNameIndex", columnList = "name"),
+})
 @Getter
 @Setter
 @ToString
@@ -19,21 +22,23 @@ public class Playlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "playlist_id", nullable = false)
     private Long id;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String name;
     private boolean isPrivate = false;
     private String coverPhotoUrl;
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
     @ToString.Exclude
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "playlists_tracks",
             joinColumns = @JoinColumn(name = "playlist_id"),
             inverseJoinColumns = @JoinColumn(name = "track_id")
     )
     private Set<Track> tracks;
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="user_id")
     private User user;
+    @OneToOne(mappedBy = "selectedPlaylist", cascade = CascadeType.ALL)
+    private StaffSelection staffSelection;
 }

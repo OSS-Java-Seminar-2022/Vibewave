@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "trackNameIndex", columnList = "name"),
+})
 @Getter
 @Setter
 @ToString
@@ -25,14 +28,21 @@ public class Track {
     private String audioSourceUrl;
     private int durationSeconds;
     private long timesPlayed;
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "album_id")
     private Album album;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_tracks",
             joinColumns = @JoinColumn(name = "track_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> users;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "playlists_tracks",
+            joinColumns = @JoinColumn(name = "track_id"),
+            inverseJoinColumns = @JoinColumn(name = "playlist_id")
+    )
+    private Set<Playlist> playlists;
 }

@@ -5,6 +5,9 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "albumFormatNameIndex", columnList = "name", unique = true),
+})
 @Getter
 @Setter
 @ToString

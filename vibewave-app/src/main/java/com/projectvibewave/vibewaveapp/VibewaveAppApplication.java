@@ -133,7 +133,10 @@ public class VibewaveAppApplication implements CommandLineRunner {
                 .isEnabled(true)
                 .artistName("DJ Premium")
                 .roles(Sets.newHashSet(basicRole, premiumRole))
+                .followers(Set.of(basicUser))
                 .build();
+
+        basicUser.setFollowers(Set.of(premiumUser));
 
         var users = List.of(adminUser, premiumUser, basicUser);
         userRepository.saveAll(users);
