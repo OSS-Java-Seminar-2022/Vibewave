@@ -9,7 +9,6 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: vibewave
-      MAIL_PSWD: wmmndxqpodrdafzx
   web:
     build: .
     container_name: web
@@ -19,3 +18,4 @@ services:
       DB_HOSTNAME: db
       DB_PORT: 5432
       GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
+      MAIL_PSWD: wmmndxqpodrdafzx

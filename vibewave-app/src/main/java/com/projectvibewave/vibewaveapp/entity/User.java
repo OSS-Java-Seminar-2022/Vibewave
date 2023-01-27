@@ -206,26 +206,6 @@ public class User implements UserDetails {
         return isEnabled;
     }
 
-    public void addFollower(User follower) {
-        getFollowers().add(follower);
-        follower.getFollowing().add(this);
-    }
-
-    public void addFollowing(User following) {
-        getFollowing().add(following);
-        following.getFollowers().add(this);
-    }
-
-    public void removeFollower(User follower) {
-        getFollowers().remove(follower);
-        follower.getFollowing().remove(this);
-    }
-
-    public void removeFollowing(User following) {
-        getFollowing().remove(following);
-        following.getFollowers().remove(this);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == this) {
